@@ -10,6 +10,10 @@ from algo_atlas.utils.file_manager import (
     validate_vault_repo,
 )
 from algo_atlas.utils.logger import Logger, get_logger
+from algo_atlas.utils.prompts import (
+    get_documentation_prompt,
+    get_expected_outputs_prompt,
+)
 
 __all__ = [
     "Logger",
@@ -21,4 +25,6 @@ __all__ = [
     "save_solution_file",
     "save_markdown",
     "check_problem_exists",
+    "get_documentation_prompt",
+    "get_expected_outputs_prompt",
 ]
