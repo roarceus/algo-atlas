@@ -1,8 +1,6 @@
 """Tests for the LeetCode scraper module."""
 
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from algo_atlas.core.scraper import (
     extract_test_cases,

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from algo_atlas.config.settings import get_settings, reload_settings
+from algo_atlas.config.settings import get_settings
 from algo_atlas.core.generator import (
     build_readme_content,
     check_claude_installed,
@@ -197,7 +197,7 @@ def verify_solution_with_progress(
         logger.error(f"Syntax error: {result.syntax_error}")
         return False
 
-    logger.success(f"Syntax valid")
+    logger.success("Syntax valid")
 
     if result.tests_run > 0:
         if result.all_passed:

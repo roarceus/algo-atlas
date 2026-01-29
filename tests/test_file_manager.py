@@ -1,7 +1,5 @@
 """Tests for the file manager module."""
 
-import pytest
-
 from algo_atlas.utils.file_manager import (
     check_problem_exists,
     create_problem_folder,

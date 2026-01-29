@@ -1,8 +1,5 @@
 """Pytest fixtures for AlgoAtlas tests."""
 
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from algo_atlas.core.scraper import ProblemData

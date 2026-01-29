@@ -1,7 +1,5 @@
 """Tests for the solution verifier module."""
 
-import pytest
-
 from algo_atlas.core.verifier import (
     check_syntax,
     run_test_case,
