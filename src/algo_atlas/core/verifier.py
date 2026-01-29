@@ -2,7 +2,6 @@
 
 import ast
 import json
-import re
 import signal
 import sys
 from dataclasses import dataclass

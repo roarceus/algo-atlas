@@ -194,7 +194,7 @@ def build_readme_content(
     header = f"# {problem.number}. {problem.title}\n\n"
     header += f"**Difficulty:** {problem.difficulty}\n\n"
     header += f"**Topics:** {', '.join(problem.topic_tags)}\n\n"
-    header += f"**LeetCode Link:** [Problem]"
+    header += "**LeetCode Link:** [Problem]"
     header += f"(https://leetcode.com/problems/{problem.slug}/)\n\n"
     header += "---\n\n"
 
