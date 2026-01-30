@@ -37,7 +37,12 @@ Generate a README.md with the following sections:
 
 Format the output as clean Markdown. Be concise but thorough. Focus on helping someone understand WHY the solution works, not just WHAT it does.
 
-Output ONLY the markdown content, no extra commentary.
+IMPORTANT: Output ONLY the raw markdown content. Do NOT include:
+- Any preamble like "Here's the README..." or "I've prepared..."
+- Code fences around the markdown (no ```markdown blocks)
+- Any closing remarks or commentary
+
+Start directly with the first heading (# Problem Link or similar).
 """
 
 EXPECTED_OUTPUTS_PROMPT = """You are solving a LeetCode problem. Given the problem description and test case inputs, compute the expected outputs.
