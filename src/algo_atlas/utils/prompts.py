@@ -1,6 +1,6 @@
 """Prompt templates for Claude AI integration."""
 
-DOCUMENTATION_PROMPT = """You are a technical documentation expert. Generate comprehensive documentation for this LeetCode problem solution.
+DOCUMENTATION_PROMPT = """You are a technical documentation expert. Generate documentation for this LeetCode problem solution using the EXACT structure below.
 
 ## Problem Information
 - **Number**: {number}
@@ -24,25 +24,91 @@ DOCUMENTATION_PROMPT = """You are a technical documentation expert. Generate com
 
 ---
 
-Generate a README.md with the following sections:
+Generate a README.md using this EXACT structure. Every section is REQUIRED and must appear in this order:
 
-1. **Problem Link** - LeetCode URL
-2. **Problem Statement** - Brief summary (2-3 sentences)
-3. **Approach** - Explain the algorithm/strategy used (be specific about the technique)
-4. **Complexity Analysis**
-   - Time Complexity: O(?) with explanation
-   - Space Complexity: O(?) with explanation
-5. **Code Walkthrough** - Step-by-step explanation of key parts
-6. **Key Insights** - What makes this solution efficient or clever
+# [Problem Title]
 
-Format the output as clean Markdown. Be concise but thorough. Focus on helping someone understand WHY the solution works, not just WHAT it does.
+## Overview
+- **Difficulty**: [Easy/Medium/Hard]
+- **Topics**: [comma-separated list of topics]
+- **LeetCode Link**: [URL]
+
+## Problem Statement
+[2-3 sentence summary of what the problem asks]
+
+## Prerequisites
+[List 2-4 concepts, data structures, or patterns one should understand before attempting this problem. Be specific.]
+
+Example:
+- Hash Table fundamentals (insertion, lookup)
+- Understanding of complement/two-pointer technique
+- Array traversal with index tracking
+
+## Approach
+[Name the technique/algorithm used and explain the strategy in 2-3 paragraphs]
+
+## Visual Example
+[Step-by-step walkthrough using ONE example from the problem. Use ASCII art, tables, or formatted text to show how the algorithm processes the input. Show the state at each step.]
+
+Example format:
+```
+Input: nums = [2,7,11,15], target = 9
+
+Step 1: i=0, num=2
+        complement = 9 - 2 = 7
+        seen = {{}}
+        7 not in seen, add 2 to seen
+        seen = {{2: 0}}
+
+Step 2: i=1, num=7
+        complement = 9 - 7 = 2
+        seen = {{2: 0}}
+        2 in seen! Return [0, 1]
+
+Output: [0, 1]
+```
+
+## Complexity Analysis
+
+### Time Complexity: O(n)
+[Explanation - use O(n), O(n^2), O(log n), O(n log n) format, NOT special characters]
+
+### Space Complexity: O(n)
+[Explanation - use O(n), O(n^2), O(1) format, NOT special characters]
+
+## Step-by-Step Code Walkthrough
+[Break down the code into logical parts with explanations]
+
+## Key Insights
+[Bullet points of what makes this solution work and any clever observations]
+
+## Common Pitfalls
+[List 2-4 common mistakes or edge cases people often miss when solving this problem]
+
+Example:
+- Forgetting to handle empty input
+- Using the same element twice
+- Off-by-one errors in index handling
+- Not considering negative numbers
+
+---
+
+RULES:
+1. Use the EXACT section headings shown above in the EXACT order
+2. The Visual Example MUST show actual step-by-step execution with state changes
+3. Use the first example from the problem for the visual walkthrough
+4. Keep explanations concise but complete
+5. Do NOT add extra sections or change the order
+6. For complexity notation, use ONLY: O(1), O(log n), O(n), O(n log n), O(n^2), O(n^3), O(2^n)
+   Do NOT use special characters like superscripts or Unicode symbols
+7. Use plain ASCII characters only. No special arrows, no Unicode symbols, no superscripts
 
 IMPORTANT: Output ONLY the raw markdown content. Do NOT include:
 - Any preamble like "Here's the README..." or "I've prepared..."
 - Code fences around the markdown (no ```markdown blocks)
 - Any closing remarks or commentary
 
-Start directly with the first heading (# Problem Link or similar).
+Start directly with: # {title}
 """
 
 EXPECTED_OUTPUTS_PROMPT = """You are solving a LeetCode problem. Given the problem description and test case inputs, compute the expected outputs.
