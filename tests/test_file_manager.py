@@ -3,6 +3,7 @@
 import re
 
 from algo_atlas.utils.file_manager import (
+    check_gh_installed,
     check_problem_exists,
     create_problem_folder,
     generate_branch_name,
@@ -234,3 +235,12 @@ class TestGenerateBranchName:
         # Branches should start the same but may differ in last minute
         assert branch1.startswith("add/1-two-sum-")
         assert branch2.startswith("add/1-two-sum-")
+
+
+class TestCheckGhInstalled:
+    """Tests for check_gh_installed function."""
+
+    def test_returns_boolean(self):
+        """Test that check_gh_installed returns a boolean."""
+        result = check_gh_installed()
+        assert isinstance(result, bool)
