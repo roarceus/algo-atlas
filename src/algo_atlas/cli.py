@@ -15,9 +15,15 @@ from algo_atlas.core.scraper import ProblemData, scrape_problem, validate_leetco
 from algo_atlas.core.verifier import verify_solution
 from algo_atlas.utils.file_manager import (
     check_problem_exists,
+    checkout_main,
+    commit_changes,
+    create_and_checkout_branch,
     create_problem_folder,
+    generate_branch_name,
+    push_branch,
     save_markdown,
     save_solution_file,
+    stage_files,
     validate_vault_repo,
 )
 from algo_atlas.utils.logger import get_logger
@@ -248,7 +254,9 @@ def save_to_vault(
     solution_code: str,
     documentation: str,
 ) -> bool:
-    """Save solution and documentation to vault.
+    """Save solution and documentation to vault with git workflow.
+
+    Creates a new branch, saves files, commits, and pushes.
 
     Args:
         logger: Logger instance.
@@ -263,13 +271,21 @@ def save_to_vault(
     logger.blank()
     logger.step("Saving to vault...")
 
-    # Check if problem already exists
+    # Check if problem already exists (for info only, we'll create new branch anyway)
     existing = check_problem_exists(vault_path, problem.number)
     if existing:
-        logger.warning(f"Problem already exists: {existing}")
-        if not logger.confirm("Overwrite existing files?", default=False):
-            logger.info("Skipped saving")
-            return False
+        logger.info(f"Note: Problem exists at {existing}")
+        logger.info("Creating new branch for this solution...")
+
+    # Generate and create branch
+    branch_name = generate_branch_name(problem.number, problem.title)
+    logger.step(f"Creating branch: {branch_name}")
+
+    success, msg = create_and_checkout_branch(vault_path, branch_name)
+    if not success:
+        logger.error(msg)
+        return False
+    logger.success(msg)
 
     # Create problem folder
     folder = create_problem_folder(
@@ -281,24 +297,60 @@ def save_to_vault(
 
     if not folder:
         logger.error("Failed to create problem folder")
+        checkout_main(vault_path)
         return False
 
     # Save solution
+    solution_path = folder / "solution.py"
     if save_solution_file(folder, solution_code):
-        logger.success(f"Saved: {folder / 'solution.py'}")
+        logger.success(f"Saved: {solution_path}")
     else:
         logger.error("Failed to save solution.py")
+        checkout_main(vault_path)
         return False
 
     # Save documentation
+    readme_path = folder / "README.md"
     if save_markdown(folder, documentation):
-        logger.success(f"Saved: {folder / 'README.md'}")
+        logger.success(f"Saved: {readme_path}")
     else:
         logger.error("Failed to save README.md")
+        checkout_main(vault_path)
         return False
+
+    # Stage files
+    success, msg = stage_files(vault_path, [solution_path, readme_path])
+    if not success:
+        logger.error(msg)
+        checkout_main(vault_path)
+        return False
+
+    # Commit changes
+    success, msg = commit_changes(vault_path, problem.number, problem.title)
+    if not success:
+        logger.error(msg)
+        checkout_main(vault_path)
+        return False
+    logger.success(msg)
+
+    # Push branch
+    logger.step("Pushing to remote...")
+    success, msg = push_branch(vault_path, branch_name)
+    if not success:
+        logger.error(msg)
+        logger.info("Files saved locally. Push manually with:")
+        logger.info(f"  cd {vault_path} && git push -u origin {branch_name}")
+    else:
+        logger.success(msg)
+
+    # Switch back to main
+    checkout_main(vault_path)
 
     logger.blank()
     logger.success(f"Problem saved to: {folder}")
+    logger.info(f"Branch: {branch_name}")
+    logger.info("Create a PR to merge into main")
+
     return True
 
 

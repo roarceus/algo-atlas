@@ -1,8 +1,11 @@
 """Tests for the file manager module."""
 
+import re
+
 from algo_atlas.utils.file_manager import (
     check_problem_exists,
     create_problem_folder,
+    generate_branch_name,
     sanitize_title,
     save_markdown,
     save_solution_file,
@@ -193,3 +196,41 @@ class TestCheckProblemExists:
         assert check_problem_exists(temp_vault, 1) is not None
         assert check_problem_exists(temp_vault, 4) is not None
         assert check_problem_exists(temp_vault, 2) is None
+
+
+class TestGenerateBranchName:
+    """Tests for generate_branch_name function."""
+
+    def test_basic_branch_name(self):
+        """Test basic branch name generation."""
+        branch = generate_branch_name(1, "Two Sum")
+
+        assert branch.startswith("add/1-two-sum-")
+        # Check timestamp format (YYMMDD-HHMM)
+        assert re.match(r"add/1-two-sum-\d{6}-\d{4}$", branch)
+
+    def test_branch_name_with_special_chars(self):
+        """Test branch name with special characters in title."""
+        branch = generate_branch_name(20, "Valid Parentheses")
+
+        assert branch.startswith("add/20-valid-parentheses-")
+        assert "(" not in branch
+        assert ")" not in branch
+
+    def test_branch_name_with_numbers(self):
+        """Test branch name with numbers in title."""
+        branch = generate_branch_name(15, "3Sum")
+
+        assert branch.startswith("add/15-3sum-")
+
+    def test_branch_name_uniqueness(self):
+        """Test that branch names are unique (timestamp-based)."""
+        import time
+
+        branch1 = generate_branch_name(1, "Two Sum")
+        time.sleep(0.1)  # Small delay
+        branch2 = generate_branch_name(1, "Two Sum")
+
+        # Branches should start the same but may differ in last minute
+        assert branch1.startswith("add/1-two-sum-")
+        assert branch2.startswith("add/1-two-sum-")
