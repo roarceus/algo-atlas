@@ -14,11 +14,13 @@ from algo_atlas.core.generator import (
 from algo_atlas.core.scraper import ProblemData, scrape_problem, validate_leetcode_url
 from algo_atlas.core.verifier import verify_solution
 from algo_atlas.utils.file_manager import (
+    check_gh_installed,
     check_problem_exists,
     checkout_main,
     commit_changes,
     create_and_checkout_branch,
     create_problem_folder,
+    create_pull_request,
     generate_branch_name,
     push_branch,
     save_markdown,
@@ -253,10 +255,11 @@ def save_to_vault(
     problem: ProblemData,
     solution_code: str,
     documentation: str,
+    leetcode_url: str,
 ) -> bool:
     """Save solution and documentation to vault with git workflow.
 
-    Creates a new branch, saves files, commits, and pushes.
+    Creates a new branch, saves files, commits, pushes, and creates PR.
 
     Args:
         logger: Logger instance.
@@ -264,6 +267,7 @@ def save_to_vault(
         problem: Problem data.
         solution_code: Solution code.
         documentation: Generated documentation.
+        leetcode_url: URL to the LeetCode problem.
 
     Returns:
         True if saved successfully.
@@ -335,8 +339,8 @@ def save_to_vault(
 
     # Push branch
     logger.step("Pushing to remote...")
-    success, msg = push_branch(vault_path, branch_name)
-    if not success:
+    push_success, msg = push_branch(vault_path, branch_name)
+    if not push_success:
         logger.error(msg)
         logger.info("Files saved locally. Push manually with:")
         logger.info(f"  cd {vault_path} && git push -u origin {branch_name}")
@@ -346,10 +350,33 @@ def save_to_vault(
     # Switch back to main
     checkout_main(vault_path)
 
+    # Create PR if push was successful and gh is available
+    pr_url = None
+    if push_success and check_gh_installed():
+        logger.step("Creating pull request...")
+        success, result = create_pull_request(
+            vault_path,
+            branch_name,
+            problem.number,
+            problem.title,
+            problem.difficulty,
+            problem.topic_tags,
+            leetcode_url,
+        )
+        if success:
+            pr_url = result
+            logger.success(f"PR created: {pr_url}")
+        else:
+            logger.warning(f"Could not create PR: {result}")
+            logger.info("Create PR manually at your vault repository")
+
     logger.blank()
     logger.success(f"Problem saved to: {folder}")
     logger.info(f"Branch: {branch_name}")
-    logger.info("Create a PR to merge into main")
+    if pr_url:
+        logger.info(f"PR: {pr_url}")
+    elif push_success:
+        logger.info("Create a PR to merge into main")
 
     return True
 
@@ -392,7 +419,7 @@ def run_workflow(logger, vault_path: Path) -> bool:
         documentation = f"# {problem.number}. {problem.title}\n\nDocumentation pending."
 
     # Save to vault
-    save_to_vault(logger, vault_path, problem, solution_code, documentation)
+    save_to_vault(logger, vault_path, problem, solution_code, documentation, url)
 
     return True
 
