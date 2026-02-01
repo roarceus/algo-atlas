@@ -21,7 +21,9 @@ from algo_atlas.utils.file_manager import (
     create_and_checkout_branch,
     create_problem_folder,
     create_pull_request,
+    ensure_labels_exist,
     generate_branch_name,
+    get_pr_labels,
     push_branch,
     save_markdown,
     save_solution_file,
@@ -275,11 +277,12 @@ def save_to_vault(
     logger.blank()
     logger.step("Saving to vault...")
 
-    # Check if problem already exists (for info only, we'll create new branch anyway)
+    # Check if problem already exists (used for labels and info)
     existing = check_problem_exists(vault_path, problem.number)
+    is_new_solution = existing is None
     if existing:
         logger.info(f"Note: Problem exists at {existing}")
-        logger.info("Creating new branch for this solution...")
+        logger.info("Creating new branch for alternative solution...")
 
     # Generate and create branch
     branch_name = generate_branch_name(problem.number, problem.title)
@@ -353,6 +356,12 @@ def save_to_vault(
     # Create PR if push was successful and gh is available
     pr_url = None
     if push_success and check_gh_installed():
+        # Ensure labels exist in the repo
+        ensure_labels_exist(vault_path)
+
+        # Get labels for this PR
+        labels = get_pr_labels(problem.difficulty, is_new_solution)
+
         logger.step("Creating pull request...")
         success, result = create_pull_request(
             vault_path,
@@ -362,10 +371,12 @@ def save_to_vault(
             problem.difficulty,
             problem.topic_tags,
             leetcode_url,
+            labels=labels,
         )
         if success:
             pr_url = result
             logger.success(f"PR created: {pr_url}")
+            logger.info(f"Labels: {', '.join(labels)}")
         else:
             logger.warning(f"Could not create PR: {result}")
             logger.info("Create PR manually at your vault repository")

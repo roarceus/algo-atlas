@@ -7,6 +7,7 @@ from algo_atlas.utils.file_manager import (
     check_problem_exists,
     create_problem_folder,
     generate_branch_name,
+    get_pr_labels,
     sanitize_title,
     save_markdown,
     save_solution_file,
@@ -244,3 +245,32 @@ class TestCheckGhInstalled:
         """Test that check_gh_installed returns a boolean."""
         result = check_gh_installed()
         assert isinstance(result, bool)
+
+
+class TestGetPrLabels:
+    """Tests for get_pr_labels function."""
+
+    def test_easy_new_solution(self):
+        """Test labels for new Easy problem."""
+        labels = get_pr_labels("Easy", is_new_solution=True)
+        assert "easy" in labels
+        assert "new-solution" in labels
+        assert "alternative-solution" not in labels
+
+    def test_medium_alternative_solution(self):
+        """Test labels for alternative Medium solution."""
+        labels = get_pr_labels("Medium", is_new_solution=False)
+        assert "medium" in labels
+        assert "alternative-solution" in labels
+        assert "new-solution" not in labels
+
+    def test_hard_new_solution(self):
+        """Test labels for new Hard problem."""
+        labels = get_pr_labels("Hard", is_new_solution=True)
+        assert "hard" in labels
+        assert "new-solution" in labels
+
+    def test_labels_are_lowercase(self):
+        """Test that difficulty labels are lowercase."""
+        labels = get_pr_labels("Easy", is_new_solution=True)
+        assert all(label.islower() or "-" in label for label in labels)
