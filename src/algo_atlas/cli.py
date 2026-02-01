@@ -28,6 +28,7 @@ from algo_atlas.utils.file_manager import (
     save_markdown,
     save_solution_file,
     stage_files,
+    update_vault_readme,
     validate_vault_repo,
 )
 from algo_atlas.utils.logger import get_logger
@@ -325,8 +326,19 @@ def save_to_vault(
         checkout_main(vault_path)
         return False
 
-    # Stage files
-    success, msg = stage_files(vault_path, [solution_path, readme_path])
+    # Update vault stats
+    vault_readme_path = vault_path / "README.md"
+    success, msg = update_vault_readme(vault_path)
+    if success:
+        logger.success(msg)
+    else:
+        logger.warning(msg)
+
+    # Stage files (include vault README if it exists)
+    files_to_stage = [solution_path, readme_path]
+    if vault_readme_path.exists():
+        files_to_stage.append(vault_readme_path)
+    success, msg = stage_files(vault_path, files_to_stage)
     if not success:
         logger.error(msg)
         checkout_main(vault_path)

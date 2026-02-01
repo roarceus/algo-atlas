@@ -596,3 +596,115 @@ def create_pull_request(
         return True, output
     else:
         return False, f"Failed to create PR: {output}"
+
+
+# =============================================================================
+# Vault Statistics
+# =============================================================================
+
+STATS_START_MARKER = "<!-- STATS:START -->"
+STATS_END_MARKER = "<!-- STATS:END -->"
+
+
+def count_vault_problems(vault_path: Path) -> dict[str, int]:
+    """Count problem folders in each difficulty directory.
+
+    Args:
+        vault_path: Path to vault repository.
+
+    Returns:
+        Dictionary with counts: {"Easy": n, "Medium": n, "Hard": n}.
+    """
+    counts = {"Easy": 0, "Medium": 0, "Hard": 0}
+
+    for difficulty in counts:
+        difficulty_path = vault_path / difficulty
+        if difficulty_path.exists():
+            # Count directories that match problem pattern (number. title)
+            folders = [
+                f for f in difficulty_path.iterdir()
+                if f.is_dir() and re.match(r"^\d+\.", f.name)
+            ]
+            counts[difficulty] = len(folders)
+
+    return counts
+
+
+def generate_stats_markdown(counts: dict[str, int]) -> str:
+    """Generate markdown table for vault statistics.
+
+    Args:
+        counts: Dictionary with problem counts by difficulty.
+
+    Returns:
+        Markdown string with stats table.
+    """
+    total = sum(counts.values())
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    lines = [
+        STATS_START_MARKER,
+        "## Statistics",
+        "",
+        "| Difficulty | Count | Percentage |",
+        "|------------|-------|------------|",
+    ]
+
+    for difficulty in ["Easy", "Medium", "Hard"]:
+        count = counts.get(difficulty, 0)
+        pct = round(count / total * 100) if total > 0 else 0
+        lines.append(f"| {difficulty} | {count} | {pct}% |")
+
+    lines.append(f"| **Total** | **{total}** | **100%** |")
+    lines.append("")
+    lines.append(f"*Last updated: {today}*")
+    lines.append(STATS_END_MARKER)
+
+    return "\n".join(lines)
+
+
+def update_vault_readme(vault_path: Path) -> Tuple[bool, str]:
+    """Update vault README.md with current statistics.
+
+    If stats section exists (between markers), replaces it.
+    Otherwise, appends stats to end of file.
+
+    Args:
+        vault_path: Path to vault repository.
+
+    Returns:
+        Tuple of (success, message).
+    """
+    readme_path = vault_path / "README.md"
+
+    # Count problems
+    counts = count_vault_problems(vault_path)
+    stats_md = generate_stats_markdown(counts)
+
+    try:
+        # Read existing content or create new
+        if readme_path.exists():
+            content = readme_path.read_text(encoding="utf-8")
+        else:
+            content = "# AlgoAtlas Vault\n\nMy documented LeetCode solutions.\n\n"
+
+        # Check if stats section exists
+        if STATS_START_MARKER in content and STATS_END_MARKER in content:
+            # Replace existing stats section
+            pattern = re.compile(
+                rf"{re.escape(STATS_START_MARKER)}.*?{re.escape(STATS_END_MARKER)}",
+                re.DOTALL,
+            )
+            new_content = pattern.sub(stats_md, content)
+        else:
+            # Append stats section
+            new_content = content.rstrip() + "\n\n" + stats_md + "\n"
+
+        # Write updated content
+        readme_path.write_text(new_content, encoding="utf-8")
+
+        total = sum(counts.values())
+        return True, f"Updated vault stats: {total} problems"
+
+    except OSError as e:
+        return False, f"Failed to update README: {e}"
