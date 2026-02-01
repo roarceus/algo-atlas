@@ -5,12 +5,15 @@ import re
 from algo_atlas.utils.file_manager import (
     check_gh_installed,
     check_problem_exists,
+    count_vault_problems,
     create_problem_folder,
     generate_branch_name,
+    generate_stats_markdown,
     get_pr_labels,
     sanitize_title,
     save_markdown,
     save_solution_file,
+    update_vault_readme,
     validate_vault_repo,
 )
 
@@ -274,3 +277,108 @@ class TestGetPrLabels:
         """Test that difficulty labels are lowercase."""
         labels = get_pr_labels("Easy", is_new_solution=True)
         assert all(label.islower() or "-" in label for label in labels)
+
+
+class TestCountVaultProblems:
+    """Tests for count_vault_problems function."""
+
+    def test_empty_vault(self, temp_vault):
+        """Test counting empty vault."""
+        counts = count_vault_problems(temp_vault)
+        assert counts == {"Easy": 0, "Medium": 0, "Hard": 0}
+
+    def test_count_problems(self, temp_vault):
+        """Test counting problems in vault."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 2, "Add Two Numbers", "Medium")
+        create_problem_folder(temp_vault, 3, "Longest Substring", "Medium")
+        create_problem_folder(temp_vault, 4, "Median", "Hard")
+
+        counts = count_vault_problems(temp_vault)
+
+        assert counts["Easy"] == 1
+        assert counts["Medium"] == 2
+        assert counts["Hard"] == 1
+
+    def test_ignores_non_problem_folders(self, temp_vault):
+        """Test that non-problem folders are ignored."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        # Create a non-problem folder
+        (temp_vault / "Easy" / "notes").mkdir()
+
+        counts = count_vault_problems(temp_vault)
+
+        assert counts["Easy"] == 1
+
+
+class TestGenerateStatsMarkdown:
+    """Tests for generate_stats_markdown function."""
+
+    def test_generate_stats(self):
+        """Test generating stats markdown."""
+        counts = {"Easy": 5, "Medium": 3, "Hard": 2}
+
+        result = generate_stats_markdown(counts)
+
+        assert "## Statistics" in result
+        assert "| Easy | 5 | 50% |" in result
+        assert "| Medium | 3 | 30% |" in result
+        assert "| Hard | 2 | 20% |" in result
+        assert "| **Total** | **10** | **100%** |" in result
+        assert "<!-- STATS:START -->" in result
+        assert "<!-- STATS:END -->" in result
+
+    def test_generate_stats_empty(self):
+        """Test generating stats for empty vault."""
+        counts = {"Easy": 0, "Medium": 0, "Hard": 0}
+
+        result = generate_stats_markdown(counts)
+
+        assert "| **Total** | **0** | **100%** |" in result
+
+
+class TestUpdateVaultReadme:
+    """Tests for update_vault_readme function."""
+
+    def test_create_readme_if_missing(self, temp_vault):
+        """Test creating README if it doesn't exist."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        success, msg = update_vault_readme(temp_vault)
+
+        assert success is True
+        assert (temp_vault / "README.md").exists()
+        content = (temp_vault / "README.md").read_text()
+        assert "## Statistics" in content
+        assert "| Easy | 1 |" in content
+
+    def test_update_existing_readme(self, temp_vault):
+        """Test updating existing README with stats."""
+        # Create initial README
+        readme = temp_vault / "README.md"
+        readme.write_text("# My Vault\n\nWelcome!\n")
+
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        success, msg = update_vault_readme(temp_vault)
+
+        assert success is True
+        content = readme.read_text()
+        assert "# My Vault" in content
+        assert "## Statistics" in content
+
+    def test_replace_existing_stats(self, temp_vault):
+        """Test replacing existing stats section."""
+        # Create README with stats
+        readme = temp_vault / "README.md"
+        readme.write_text(
+            "# Vault\n\n<!-- STATS:START -->\nOld stats\n<!-- STATS:END -->\n"
+        )
+
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 2, "Add Two", "Medium")
+        success, msg = update_vault_readme(temp_vault)
+
+        content = readme.read_text()
+        assert "Old stats" not in content
+        assert "| Easy | 1 |" in content
+        assert "| Medium | 1 |" in content
