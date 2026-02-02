@@ -1,5 +1,6 @@
 """Command-line interface for AlgoAtlas."""
 
+import argparse
 import sys
 from pathlib import Path
 from typing import Optional
@@ -34,16 +35,19 @@ from algo_atlas.utils.file_manager import (
 from algo_atlas.utils.logger import get_logger
 
 
-def startup_checks(logger) -> tuple[bool, Optional[Path]]:
+def startup_checks(logger, dry_run: bool = False) -> tuple[bool, Optional[Path]]:
     """Run startup checks for vault and Claude CLI.
 
     Args:
         logger: Logger instance.
+        dry_run: If True, skip vault checks.
 
     Returns:
         Tuple of (all_checks_passed, vault_path).
     """
     logger.header("AlgoAtlas")
+    if dry_run:
+        logger.info("DRY RUN MODE - No files will be saved")
     logger.info("Running startup checks...")
     logger.blank()
 
@@ -58,20 +62,23 @@ def startup_checks(logger) -> tuple[bool, Optional[Path]]:
         logger.info("Install with: npm install -g @anthropic-ai/claude-code")
         all_passed = False
 
-    # Check vault configuration
-    settings = get_settings()
-    if settings.vault_path:
-        vault_path = Path(settings.vault_path)
-        if validate_vault_repo(vault_path):
-            logger.success(f"Vault configured: {vault_path}")
-        else:
-            logger.error(f"Vault path invalid: {vault_path}")
-            logger.info("Ensure Easy/, Medium/, Hard/ directories exist")
-            all_passed = False
+    # Check vault configuration (skip in dry-run mode)
+    if dry_run:
+        logger.info("Vault check skipped (dry-run mode)")
     else:
-        logger.error("Vault path not configured")
-        logger.info("Set vault_path in config/config.yaml")
-        all_passed = False
+        settings = get_settings()
+        if settings.vault_path:
+            vault_path = Path(settings.vault_path)
+            if validate_vault_repo(vault_path):
+                logger.success(f"Vault configured: {vault_path}")
+            else:
+                logger.error(f"Vault path invalid: {vault_path}")
+                logger.info("Ensure Easy/, Medium/, Hard/ directories exist")
+                all_passed = False
+        else:
+            logger.error("Vault path not configured")
+            logger.info("Set vault_path in config/config.yaml")
+            all_passed = False
 
     logger.blank()
     return all_passed, vault_path
@@ -404,12 +411,47 @@ def save_to_vault(
     return True
 
 
-def run_workflow(logger, vault_path: Path) -> bool:
+def display_dry_run_output(
+    logger,
+    problem: ProblemData,
+    solution_code: str,
+    documentation: str,
+) -> None:
+    """Display generated documentation in dry-run mode.
+
+    Args:
+        logger: Logger instance.
+        problem: Problem data.
+        solution_code: Solution code.
+        documentation: Generated documentation.
+    """
+    logger.blank()
+    logger.header("DRY RUN OUTPUT")
+    logger.blank()
+
+    logger.info(f"Would save to: {problem.difficulty}/{problem.number}. {problem.title}/")
+    logger.blank()
+
+    logger.step("solution.py:")
+    logger.blank()
+    print(solution_code)
+    logger.blank()
+
+    logger.step("README.md:")
+    logger.blank()
+    print(documentation)
+    logger.blank()
+
+    logger.success("Dry run complete - no files were saved")
+
+
+def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> bool:
     """Run the main workflow for one problem.
 
     Args:
         logger: Logger instance.
-        vault_path: Path to vault.
+        vault_path: Path to vault (None if dry-run).
+        dry_run: If True, preview output without saving.
 
     Returns:
         True if workflow completed successfully.
@@ -437,9 +479,17 @@ def run_workflow(logger, vault_path: Path) -> bool:
     # Generate documentation
     documentation = generate_docs_with_progress(logger, problem, solution_code)
     if not documentation:
+        if dry_run:
+            logger.error("Cannot complete dry run without documentation")
+            return False
         if not logger.confirm("Save without documentation?", default=False):
             return False
         documentation = f"# {problem.number}. {problem.title}\n\nDocumentation pending."
+
+    # Dry run: display output and exit
+    if dry_run:
+        display_dry_run_output(logger, problem, solution_code, documentation)
+        return True
 
     # Save to vault
     save_to_vault(logger, vault_path, problem, solution_code, documentation, url)
@@ -447,12 +497,31 @@ def run_workflow(logger, vault_path: Path) -> bool:
     return True
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments.
+
+    Returns:
+        Parsed arguments namespace.
+    """
+    parser = argparse.ArgumentParser(
+        prog="algo-atlas",
+        description="Generate documentation for LeetCode solutions",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview generated documentation without saving to vault",
+    )
+    return parser.parse_args()
+
+
 def main():
     """Main entry point for AlgoAtlas CLI."""
+    args = parse_args()
     logger = get_logger()
 
     # Run startup checks
-    checks_passed, vault_path = startup_checks(logger)
+    checks_passed, vault_path = startup_checks(logger, dry_run=args.dry_run)
 
     if not checks_passed:
         logger.error("Startup checks failed. Please fix issues above.")
@@ -461,7 +530,7 @@ def main():
     # Main loop
     while True:
         try:
-            run_workflow(logger, vault_path)
+            run_workflow(logger, vault_path, dry_run=args.dry_run)
 
             logger.blank()
             if not logger.confirm("Process another problem?", default=True):
