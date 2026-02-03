@@ -7,12 +7,15 @@ from algo_atlas.utils.file_manager import (
     check_problem_exists,
     count_vault_problems,
     create_problem_folder,
+    extract_topics_from_readme,
     generate_branch_name,
     generate_stats_markdown,
+    generate_topic_index_markdown,
     get_pr_labels,
     sanitize_title,
     save_markdown,
     save_solution_file,
+    scan_vault_topics,
     update_vault_readme,
     validate_vault_repo,
 )
@@ -382,3 +385,112 @@ class TestUpdateVaultReadme:
         assert "Old stats" not in content
         assert "| Easy | 1 |" in content
         assert "| Medium | 1 |" in content
+
+
+class TestExtractTopicsFromReadme:
+    """Tests for extract_topics_from_readme function."""
+
+    def test_extract_topics(self, temp_vault):
+        """Test extracting topics from README."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        readme = folder / "README.md"
+        readme.write_text("# Two Sum\n\n**Topics:** Array, Hash Table\n")
+
+        topics = extract_topics_from_readme(readme)
+
+        assert topics == ["Array", "Hash Table"]
+
+    def test_no_topics_line(self, temp_vault):
+        """Test README without topics line."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        readme = folder / "README.md"
+        readme.write_text("# Two Sum\n\nNo topics here.\n")
+
+        topics = extract_topics_from_readme(readme)
+
+        assert topics == []
+
+    def test_nonexistent_file(self, temp_vault):
+        """Test nonexistent README returns empty list."""
+        topics = extract_topics_from_readme(temp_vault / "nonexistent.md")
+        assert topics == []
+
+
+class TestScanVaultTopics:
+    """Tests for scan_vault_topics function."""
+
+    def test_scan_topics(self, temp_vault):
+        """Test scanning vault for topics."""
+        # Create problems with READMEs
+        folder1 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder1 / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        folder2 = create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+        (folder2 / "README.md").write_text("**Topics:** Array, Two Pointers\n")
+
+        topic_index = scan_vault_topics(temp_vault)
+
+        assert "Array" in topic_index
+        assert len(topic_index["Array"]) == 2
+        assert "Hash Table" in topic_index
+        assert "Two Pointers" in topic_index
+
+    def test_empty_vault(self, temp_vault):
+        """Test scanning empty vault."""
+        topic_index = scan_vault_topics(temp_vault)
+        assert topic_index == {}
+
+    def test_problems_sorted_by_number(self, temp_vault):
+        """Test that problems within topic are sorted by number."""
+        folder1 = create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+        (folder1 / "README.md").write_text("**Topics:** Array\n")
+
+        folder2 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder2 / "README.md").write_text("**Topics:** Array\n")
+
+        topic_index = scan_vault_topics(temp_vault)
+
+        assert topic_index["Array"][0]["number"] == 1
+        assert topic_index["Array"][1]["number"] == 15
+
+
+class TestGenerateTopicIndexMarkdown:
+    """Tests for generate_topic_index_markdown function."""
+
+    def test_generate_index(self):
+        """Test generating topic index markdown."""
+        topic_index = {
+            "Array": [
+                {"number": 1, "title": "Two Sum", "difficulty": "Easy", "folder_name": "1. Two Sum"},
+            ],
+            "Hash Table": [
+                {"number": 1, "title": "Two Sum", "difficulty": "Easy", "folder_name": "1. Two Sum"},
+            ],
+        }
+
+        result = generate_topic_index_markdown(topic_index)
+
+        assert "## Topics" in result
+        assert "### Array" in result
+        assert "### Hash Table" in result
+        assert "[1. Two Sum](Easy/1.%20Two%20Sum/)" in result
+        assert "<!-- TOPICS:START -->" in result
+        assert "<!-- TOPICS:END -->" in result
+
+    def test_empty_index(self):
+        """Test generating empty topic index."""
+        result = generate_topic_index_markdown({})
+        assert result == ""
+
+    def test_topics_sorted_alphabetically(self):
+        """Test that topics are sorted alphabetically."""
+        topic_index = {
+            "Zebra": [{"number": 1, "title": "Test", "difficulty": "Easy", "folder_name": "1. Test"}],
+            "Apple": [{"number": 2, "title": "Test2", "difficulty": "Easy", "folder_name": "2. Test2"}],
+        }
+
+        result = generate_topic_index_markdown(topic_index)
+
+        apple_pos = result.index("### Apple")
+        zebra_pos = result.index("### Zebra")
+        assert apple_pos < zebra_pos
