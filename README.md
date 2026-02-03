@@ -7,13 +7,43 @@
 
 A CLI tool that generates comprehensive documentation for your LeetCode solutions using Claude AI.
 
+## Architecture
+
+AlgoAtlas uses a **two-repository architecture**:
+- **algo-atlas** (this repo) - The CLI tool/application
+- **algo-atlas-vault** - Separate repository for storing documented solutions
+
+This separation keeps the tool code separate from your solutions, making the vault repository clean and portfolio-ready.
+
 ## Features
 
-- **Scrape LeetCode Problems** - Automatically fetch problem details via GraphQL API
-- **Verify Solutions** - Syntax checking and test case execution before saving
-- **AI-Powered Documentation** - Generate detailed explanations using Claude
-- **Organized Vault** - Store solutions in a structured repository by difficulty
-- **Interactive CLI** - User-friendly command-line interface with colored output
+### Core Features
+- **LeetCode Scraper** - Fetch problem details via GraphQL API with user-agent rotation
+- **Solution Verifier** - Syntax checking and test case execution with timeout protection
+- **AI Documentation** - Generate detailed explanations using Claude Code CLI
+- **Organized Vault** - Store solutions by difficulty (Easy/Medium/Hard)
+- **Interactive CLI** - Colored console output with progress indicators
+
+### Vault Automation
+- **Auto-update Stats** - Automatically update vault README with problem counts
+- **Branch-per-Problem** - Create unique branches: `add/{number}-{slug}-{timestamp}`
+- **Auto-create PR** - Generate pull requests with problem details and approach preview
+- **PR Labels** - Auto-apply labels based on difficulty (`easy`, `medium`, `hard`) and solution type (`new-solution`, `alternative-solution`)
+
+### Additional Features
+- **Dry-run Mode** - Preview documentation without saving (`--dry-run`)
+- **Duplicate Detection** - Warns if problem exists, supports alternative solutions
+- **Topic Index** - Auto-generate topic-based index in vault README
+- **LeetCode Format Parsing** - Handles `nums = [2,7,11,15], target = 9` format
+
+## Implementation Status
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| **Phase 1** | Core Features (Scraper, Verifier, Generator, CLI) | Completed |
+| **Phase 1.5** | Bug Fixes (Input parsing, Claude output cleanup) | Completed |
+| **Phase 2** | Vault Automation (Stats, Branches, PRs, Labels) | Completed |
+| **Phase 3** | Additional Features (Dry-run, Duplicates, Topic Index) | Completed |
 
 ## Installation
 
@@ -21,6 +51,7 @@ A CLI tool that generates comprehensive documentation for your LeetCode solution
 
 - Python 3.10 or higher
 - [Claude Code CLI](https://github.com/anthropics/claude-code) installed and configured
+- [GitHub CLI](https://cli.github.com/) (for PR creation features)
 
 ### Install from source
 
@@ -59,13 +90,34 @@ verifier:
   execution_timeout: 5
 ```
 
-3. Set up your vault repository with the required structure:
+3. Set up your vault repository:
+
+```bash
+# Create vault as sibling directory
+cd ..
+mkdir algo-atlas-vault && cd algo-atlas-vault
+git init
+mkdir Easy Medium Hard
+echo "# AlgoAtlas Vault" > README.md
+git add . && git commit -m "Initial commit"
+git remote add origin <your-vault-repo-url>
+git push -u origin main
+```
+
+**Vault Structure:**
 
 ```
 algo-atlas-vault/
 ├── Easy/
+│   └── 1. Two Sum/
+│       ├── solution.py
+│       └── README.md
 ├── Medium/
-└── Hard/
+│   └── 2. Add Two Numbers/
+│       ├── solution.py
+│       └── README.md
+├── Hard/
+└── README.md              # Auto-updated with statistics and topic index
 ```
 
 ## Usage
@@ -83,7 +135,12 @@ python -m algo_atlas
 3. **Provide Solution** - Paste code or provide a file path
 4. **Verification** - Syntax check and test case execution
 5. **Documentation** - Claude generates comprehensive README
-6. **Save** - Files saved to vault in organized structure
+6. **Git Workflow**:
+   - Creates branch: `add/{number}-{slug}-{YYMMDD}-{HHMM}`
+   - Saves files to vault in organized structure
+   - Updates vault README with statistics
+   - Commits and pushes changes
+   - Creates PR with labels and metadata
 
 ### Example Session
 
@@ -124,12 +181,22 @@ END
  + Documentation generated
 
  -> Saving to vault...
+ + Created branch: add/1-two-sum-250130-1432
  + Saved: /path/to/vault/Easy/1. Two Sum/solution.py
  + Saved: /path/to/vault/Easy/1. Two Sum/README.md
-
- + Problem saved to: /path/to/vault/Easy/1. Two Sum
+ + Updated vault statistics
+ + Committed and pushed changes
+ + Created PR: https://github.com/user/algo-atlas-vault/pull/1
 
 ? Process another problem? [Y/n]:
+```
+
+### Dry-run Mode
+
+Preview documentation without saving:
+
+```bash
+python -m algo_atlas --dry-run
 ```
 
 ## Project Structure
