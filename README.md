@@ -34,6 +34,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 - **Dry-run Mode** - Preview documentation without saving (`--dry-run`)
 - **Duplicate Detection** - Warns if problem exists, supports alternative solutions
 - **Topic Index** - Auto-generate topic-based index in vault README
+- **Search** - Search problems by topic, difficulty, keyword, or number
 - **LeetCode Format Parsing** - Handles `nums = [2,7,11,15], target = 9` format
 
 ## Implementation Status
@@ -197,6 +198,30 @@ Preview documentation without saving:
 
 ```bash
 python -m algo_atlas --dry-run
+```
+
+### Search
+
+Search problems in your vault:
+
+```bash
+# List all topics in vault
+python -m algo_atlas search --list-topics
+
+# Search by keyword in title
+python -m algo_atlas search "Two Sum"
+
+# Search by problem number
+python -m algo_atlas search 15
+
+# Search by topic (partial match, case-insensitive)
+python -m algo_atlas search -t Array
+
+# Search by difficulty
+python -m algo_atlas search -d easy
+
+# Combine filters
+python -m algo_atlas search -t Array -d medium
 ```
 
 ## Project Structure
