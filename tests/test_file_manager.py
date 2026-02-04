@@ -11,11 +11,18 @@ from algo_atlas.utils.file_manager import (
     generate_branch_name,
     generate_stats_markdown,
     generate_topic_index_markdown,
+    get_all_problems,
     get_pr_labels,
+    list_all_topics,
     sanitize_title,
     save_markdown,
     save_solution_file,
     scan_vault_topics,
+    search_by_difficulty,
+    search_by_keyword,
+    search_by_number,
+    search_by_topic,
+    search_problems,
     update_vault_readme,
     validate_vault_repo,
 )
@@ -494,3 +501,247 @@ class TestGenerateTopicIndexMarkdown:
         apple_pos = result.index("### Apple")
         zebra_pos = result.index("### Zebra")
         assert apple_pos < zebra_pos
+
+
+class TestGetAllProblems:
+    """Tests for get_all_problems function."""
+
+    def test_empty_vault(self, temp_vault):
+        """Test getting problems from empty vault."""
+        problems = get_all_problems(temp_vault)
+        assert problems == []
+
+    def test_get_problems(self, temp_vault):
+        """Test getting all problems from vault."""
+        folder1 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder1 / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        folder2 = create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+        (folder2 / "README.md").write_text("**Topics:** Array, Two Pointers\n")
+
+        problems = get_all_problems(temp_vault)
+
+        assert len(problems) == 2
+        assert problems[0]["number"] == 1
+        assert problems[0]["title"] == "Two Sum"
+        assert problems[0]["difficulty"] == "Easy"
+        assert "Array" in problems[0]["topics"]
+        assert problems[1]["number"] == 15
+
+    def test_problems_sorted_by_number(self, temp_vault):
+        """Test that problems are sorted by number."""
+        create_problem_folder(temp_vault, 100, "Problem 100", "Hard")
+        create_problem_folder(temp_vault, 1, "Problem 1", "Easy")
+        create_problem_folder(temp_vault, 50, "Problem 50", "Medium")
+
+        problems = get_all_problems(temp_vault)
+
+        assert problems[0]["number"] == 1
+        assert problems[1]["number"] == 50
+        assert problems[2]["number"] == 100
+
+
+class TestSearchByTopic:
+    """Tests for search_by_topic function."""
+
+    def test_search_by_topic(self, temp_vault):
+        """Test searching by topic."""
+        folder1 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder1 / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        folder2 = create_problem_folder(temp_vault, 20, "Valid Parentheses", "Easy")
+        (folder2 / "README.md").write_text("**Topics:** String, Stack\n")
+
+        results = search_by_topic(temp_vault, "Array")
+
+        assert len(results) == 1
+        assert results[0]["number"] == 1
+
+    def test_search_case_insensitive(self, temp_vault):
+        """Test that topic search is case-insensitive."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        results = search_by_topic(temp_vault, "array")
+
+        assert len(results) == 1
+
+    def test_search_partial_match(self, temp_vault):
+        """Test that topic search supports partial match."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder / "README.md").write_text("**Topics:** Hash Table\n")
+
+        results = search_by_topic(temp_vault, "Hash")
+
+        assert len(results) == 1
+
+    def test_no_matches(self, temp_vault):
+        """Test search with no matches."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder / "README.md").write_text("**Topics:** Array\n")
+
+        results = search_by_topic(temp_vault, "Graph")
+
+        assert len(results) == 0
+
+
+class TestSearchByDifficulty:
+    """Tests for search_by_difficulty function."""
+
+    def test_search_easy(self, temp_vault):
+        """Test searching for Easy problems."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 2, "Add Two Numbers", "Medium")
+
+        results = search_by_difficulty(temp_vault, "easy")
+
+        assert len(results) == 1
+        assert results[0]["difficulty"] == "Easy"
+
+    def test_search_case_insensitive(self, temp_vault):
+        """Test that difficulty search is case-insensitive."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        results = search_by_difficulty(temp_vault, "EASY")
+
+        assert len(results) == 1
+
+    def test_invalid_difficulty(self, temp_vault):
+        """Test search with invalid difficulty."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        results = search_by_difficulty(temp_vault, "invalid")
+
+        assert len(results) == 0
+
+
+class TestSearchByKeyword:
+    """Tests for search_by_keyword function."""
+
+    def test_search_by_keyword(self, temp_vault):
+        """Test searching by keyword in title."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+
+        results = search_by_keyword(temp_vault, "Sum")
+
+        assert len(results) == 2
+
+    def test_search_case_insensitive(self, temp_vault):
+        """Test that keyword search is case-insensitive."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        results = search_by_keyword(temp_vault, "sum")
+
+        assert len(results) == 1
+
+    def test_no_matches(self, temp_vault):
+        """Test search with no matches."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        results = search_by_keyword(temp_vault, "Graph")
+
+        assert len(results) == 0
+
+
+class TestSearchByNumber:
+    """Tests for search_by_number function."""
+
+    def test_search_by_number(self, temp_vault):
+        """Test searching by problem number."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+
+        result = search_by_number(temp_vault, 1)
+
+        assert result is not None
+        assert result["number"] == 1
+        assert result["title"] == "Two Sum"
+
+    def test_not_found(self, temp_vault):
+        """Test search for non-existent problem."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+
+        result = search_by_number(temp_vault, 999)
+
+        assert result is None
+
+
+class TestSearchProblems:
+    """Tests for search_problems function."""
+
+    def test_search_with_query(self, temp_vault):
+        """Test search with query parameter."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+
+        results = search_problems(temp_vault, query="Two")
+
+        assert len(results) == 1
+        assert results[0]["title"] == "Two Sum"
+
+    def test_search_with_number_query(self, temp_vault):
+        """Test search with numeric query."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+
+        results = search_problems(temp_vault, query="15")
+
+        assert len(results) == 1
+        assert results[0]["number"] == 15
+
+    def test_search_with_multiple_filters(self, temp_vault):
+        """Test search with multiple filters."""
+        folder1 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder1 / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        folder2 = create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+        (folder2 / "README.md").write_text("**Topics:** Array, Two Pointers\n")
+
+        results = search_problems(temp_vault, topic="Array", difficulty="easy")
+
+        assert len(results) == 1
+        assert results[0]["number"] == 1
+
+    def test_search_no_filters(self, temp_vault):
+        """Test search with no filters returns all."""
+        create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        create_problem_folder(temp_vault, 15, "3Sum", "Medium")
+
+        results = search_problems(temp_vault)
+
+        assert len(results) == 2
+
+
+class TestListAllTopics:
+    """Tests for list_all_topics function."""
+
+    def test_list_topics(self, temp_vault):
+        """Test listing all topics."""
+        folder1 = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder1 / "README.md").write_text("**Topics:** Array, Hash Table\n")
+
+        folder2 = create_problem_folder(temp_vault, 20, "Valid Parentheses", "Easy")
+        (folder2 / "README.md").write_text("**Topics:** String, Stack\n")
+
+        topics = list_all_topics(temp_vault)
+
+        assert len(topics) == 4
+        assert "Array" in topics
+        assert "Hash Table" in topics
+        assert "Stack" in topics
+        assert "String" in topics
+
+    def test_topics_sorted(self, temp_vault):
+        """Test that topics are sorted alphabetically."""
+        folder = create_problem_folder(temp_vault, 1, "Two Sum", "Easy")
+        (folder / "README.md").write_text("**Topics:** Zebra, Apple, Mango\n")
+
+        topics = list_all_topics(temp_vault)
+
+        assert topics == ["Apple", "Mango", "Zebra"]
+
+    def test_empty_vault(self, temp_vault):
+        """Test listing topics from empty vault."""
+        topics = list_all_topics(temp_vault)
+        assert topics == []
