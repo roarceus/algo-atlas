@@ -25,9 +25,11 @@ from algo_atlas.utils.file_manager import (
     ensure_labels_exist,
     generate_branch_name,
     get_pr_labels,
+    list_all_topics,
     push_branch,
     save_markdown,
     save_solution_file,
+    search_problems,
     stage_files,
     update_vault_readme,
     validate_vault_repo,
@@ -497,6 +499,62 @@ def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> b
     return True
 
 
+def run_search(logger, vault_path: Path, args: argparse.Namespace) -> None:
+    """Run search command and display results.
+
+    Args:
+        logger: Logger instance.
+        vault_path: Path to vault directory.
+        args: Parsed command-line arguments.
+    """
+    logger.header("AlgoAtlas Search")
+
+    # If --list-topics flag, show all topics
+    if args.list_topics:
+        topics = list_all_topics(vault_path)
+        if topics:
+            logger.info(f"Found {len(topics)} topics in vault:")
+            logger.blank()
+            for topic in topics:
+                logger.info(f"  - {topic}")
+        else:
+            logger.warning("No topics found in vault")
+        return
+
+    # Run search with filters
+    results = search_problems(
+        vault_path,
+        query=args.query,
+        topic=args.topic,
+        difficulty=args.difficulty,
+    )
+
+    if not results:
+        logger.warning("No problems found matching your search")
+        return
+
+    logger.success(f"Found {len(results)} problem(s):")
+    logger.blank()
+
+    # Group by difficulty for display
+    by_difficulty = {"Easy": [], "Medium": [], "Hard": []}
+    for p in results:
+        by_difficulty[p["difficulty"]].append(p)
+
+    for difficulty in ["Easy", "Medium", "Hard"]:
+        problems = by_difficulty[difficulty]
+        if not problems:
+            continue
+
+        logger.info(f"[{difficulty}]")
+        for p in problems:
+            topics_str = ", ".join(p["topics"]) if p["topics"] else "No topics"
+            logger.info(f"  {p['number']}. {p['title']}")
+            logger.info(f"     Topics: {topics_str}")
+            logger.info(f"     Path: {p['folder_path']}")
+        logger.blank()
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments.
 
@@ -507,11 +565,43 @@ def parse_args() -> argparse.Namespace:
         prog="algo-atlas",
         description="Generate documentation for LeetCode solutions",
     )
+
+    # Create subcommands
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Default run command (no subcommand needed)
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Preview generated documentation without saving to vault",
     )
+
+    # Search subcommand
+    search_parser = subparsers.add_parser(
+        "search",
+        help="Search problems in vault",
+    )
+    search_parser.add_argument(
+        "query",
+        nargs="?",
+        default=None,
+        help="Search query (problem number or keyword in title)",
+    )
+    search_parser.add_argument(
+        "-t", "--topic",
+        help="Filter by topic (partial match)",
+    )
+    search_parser.add_argument(
+        "-d", "--difficulty",
+        choices=["easy", "medium", "hard"],
+        help="Filter by difficulty",
+    )
+    search_parser.add_argument(
+        "--list-topics",
+        action="store_true",
+        help="List all topics in vault",
+    )
+
     return parser.parse_args()
 
 
@@ -520,6 +610,23 @@ def main():
     args = parse_args()
     logger = get_logger()
 
+    # Handle search command
+    if args.command == "search":
+        # Get vault path for search
+        settings = get_settings()
+        if not settings.vault_path:
+            logger.error("Vault path not configured")
+            sys.exit(1)
+
+        vault_path = Path(settings.vault_path)
+        if not validate_vault_repo(vault_path):
+            logger.error(f"Vault path invalid: {vault_path}")
+            sys.exit(1)
+
+        run_search(logger, vault_path, args)
+        return
+
+    # Default: run documentation workflow
     # Run startup checks
     checks_passed, vault_path = startup_checks(logger, dry_run=args.dry_run)
 
