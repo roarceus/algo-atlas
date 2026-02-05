@@ -35,6 +35,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 - **Duplicate Detection** - Warns if problem exists, supports alternative solutions
 - **Topic Index** - Auto-generate topic-based index in vault README
 - **Search** - Search problems by topic, difficulty, keyword, or number
+- **Batch Processing** - Process multiple problems from a file (`batch` command)
 - **LeetCode Format Parsing** - Handles `nums = [2,7,11,15], target = 9` format
 
 ## Implementation Status
@@ -44,7 +45,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 | **Phase 1** | Core Features (Scraper, Verifier, Generator, CLI) | Completed |
 | **Phase 1.5** | Bug Fixes (Input parsing, Claude output cleanup) | Completed |
 | **Phase 2** | Vault Automation (Stats, Branches, PRs, Labels) | Completed |
-| **Phase 3** | Additional Features (Dry-run, Duplicates, Topic Index) | Completed |
+| **Phase 3** | Additional Features (Dry-run, Duplicates, Topic Index, Search, Batch) | Completed |
 
 ## Installation
 
@@ -222,6 +223,71 @@ python -m algo_atlas search -d easy
 
 # Combine filters
 python -m algo_atlas search -t Array -d medium
+```
+
+### Batch Processing
+
+Process multiple problems at once from a batch file:
+
+```bash
+python -m algo_atlas batch problems.txt
+```
+
+**Options:**
+- `--dry-run` - Preview documentation without saving
+- `--skip-verification` - Skip test case verification
+- `--continue-on-error` - Continue processing if one problem fails
+
+**Text format** (`problems.txt`):
+```
+# Lines starting with # are comments
+https://leetcode.com/problems/two-sum/, solutions/two_sum.py
+https://leetcode.com/problems/valid-parentheses/, solutions/valid_parentheses.py
+https://leetcode.com/problems/merge-two-sorted-lists/, solutions/merge_lists.py
+```
+
+**JSON format** (`problems.json`):
+```json
+[
+  {"url": "https://leetcode.com/problems/two-sum/", "solution": "solutions/two_sum.py"},
+  {"url": "https://leetcode.com/problems/valid-parentheses/", "solution": "solutions/valid_parentheses.py"},
+  {"url": "https://leetcode.com/problems/merge-two-sorted-lists/", "solution": "solutions/merge_lists.py"}
+]
+```
+
+**Example session:**
+```
+AlgoAtlas Batch Processing
+--------------------------
+ * Batch file: problems.txt
+ + Found 3 problem(s) to process
+
+Processing 1/3
+--------------
+ * URL: https://leetcode.com/problems/two-sum/
+ * Solution: solutions/two_sum.py
+ -> Scraping problem from LeetCode...
+ + Found: 1. Two Sum (Easy)
+ -> Verifying solution...
+ + Syntax valid
+ + All tests passed (3/3)
+ -> Generating documentation with Claude...
+ + Documentation generated
+ -> Saving to vault...
+ + Created branch: add/1-two-sum-250201-1432
+ + PR created: https://github.com/user/algo-atlas-vault/pull/1
+
+... (repeats for each problem)
+
+Batch Processing Summary
+------------------------
+ * Total items: 3
+ + Successful: 3
+
+Completed:
+ + 1. Two Sum
+ + 20. Valid Parentheses
+ + 21. Merge Two Sorted Lists
 ```
 
 ## Project Structure
