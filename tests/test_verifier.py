@@ -97,6 +97,120 @@ class TestRunTestCase:
         assert result.passed is True
 
 
+class TestExecNamespace:
+    """Tests for solution execution with typing annotations."""
+
+    def test_solution_with_list_annotation(self):
+        """Test solution using List[int] without explicit import."""
+        code = """class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        seen = {}
+        for i, n in enumerate(nums):
+            if target - n in seen:
+                return [seen[target - n], i]
+            seen[n] = i
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[[2, 7, 11, 15], 9],
+            expected_output=[0, 1],
+        )
+        assert result.passed is True
+        assert result.error is None
+
+    def test_solution_with_optional_annotation(self):
+        """Test solution using Optional without explicit import."""
+        code = """class Solution:
+    def twoSum(self, nums: List[int], target: int) -> Optional[List[int]]:
+        seen = {}
+        for i, n in enumerate(nums):
+            if target - n in seen:
+                return [seen[target - n], i]
+            seen[n] = i
+        return None
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[[2, 7, 11, 15], 9],
+            expected_output=[0, 1],
+        )
+        assert result.passed is True
+
+    def test_solution_with_dict_annotation(self):
+        """Test solution using Dict without explicit import."""
+        code = """class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        seen: Dict[int, int] = {}
+        for i, n in enumerate(nums):
+            if target - n in seen:
+                return [seen[target - n], i]
+            seen[n] = i
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[[2, 7, 11, 15], 9],
+            expected_output=[0, 1],
+        )
+        assert result.passed is True
+
+    def test_solution_with_defaultdict(self):
+        """Test solution using defaultdict without explicit import."""
+        code = """class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        groups = defaultdict(list)
+        for s in strs:
+            key = ''.join(sorted(s))
+            groups[key].append(s)
+        return list(groups.values())
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[["eat", "tea", "ate"]],
+            expected_output=[["eat", "tea", "ate"]],
+        )
+        assert result.passed is True
+
+    def test_solution_with_deque(self):
+        """Test solution using deque without explicit import."""
+        code = """class Solution:
+    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:
+        q = deque()
+        result = []
+        for i, n in enumerate(nums):
+            while q and nums[q[-1]] <= n:
+                q.pop()
+            q.append(i)
+            if q[0] == i - k:
+                q.popleft()
+            if i >= k - 1:
+                result.append(nums[q[0]])
+        return result
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[[1, 3, -1, -3, 5, 3, 6, 7], 3],
+            expected_output=[3, 3, 5, 5, 6, 7],
+        )
+        assert result.passed is True
+
+    def test_solution_with_inf(self):
+        """Test solution using inf without explicit import."""
+        code = """class Solution:
+    def minCost(self, nums: List[int]) -> int:
+        best = inf
+        for n in nums:
+            if n < best:
+                best = n
+        return best
+"""
+        result = run_test_case(
+            solution_code=code,
+            input_args=[[3, 1, 2]],
+            expected_output=1,
+        )
+        assert result.passed is True
+
+
 class TestVerifySolution:
     """Tests for verify_solution function."""
 
