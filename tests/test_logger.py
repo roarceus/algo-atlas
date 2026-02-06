@@ -1,8 +1,5 @@
 """Tests for the Rich-based logger module."""
 
-import io
-from unittest.mock import patch
-
 import pytest
 
 from algo_atlas.utils.logger import (
