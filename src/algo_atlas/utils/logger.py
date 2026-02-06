@@ -1,12 +1,27 @@
-"""Colored logging utilities for AlgoAtlas."""
+"""Rich-based logging utilities for AlgoAtlas."""
 
 import sys
-from typing import Optional
+from contextlib import contextmanager
+from typing import Generator, Optional
 
-from colorama import Fore, Style, init
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm, Prompt
+from rich.status import Status
+from rich.table import Table
+from rich.text import Text
+from rich.theme import Theme
 
-# Initialize colorama for Windows support
-init(autoreset=True)
+# Custom theme for AlgoAtlas
+ALGOATLAS_THEME = Theme({
+    "success": "bold green",
+    "error": "bold red",
+    "warning": "bold yellow",
+    "info": "blue",
+    "step": "cyan",
+    "header": "bold cyan",
+    "debug": "dim",
+})
 
 
 def _supports_unicode() -> bool:
@@ -18,21 +33,16 @@ def _supports_unicode() -> bool:
         return False
 
 
+# Use ASCII-safe symbols when Unicode is not supported
+_UNICODE = _supports_unicode()
+_CHECK = "\u2713" if _UNICODE else "+"
+_CROSS = "\u2717" if _UNICODE else "x"
+_BULLET = "\u2022" if _UNICODE else "*"
+_ARROW = "\u2192" if _UNICODE else "->"
+
+
 class Logger:
-    """Colored console logger with progress indicators."""
-
-    # Use ASCII-safe symbols for Windows compatibility
-    _CHECK = "+" if not _supports_unicode() else "\u2713"
-    _CROSS = "x" if not _supports_unicode() else "\u2717"
-    _BULLET = "*" if not _supports_unicode() else "\u2022"
-    _ARROW = "->" if not _supports_unicode() else "\u2192"
-
-    # Status indicators
-    SUCCESS = f"{Fore.GREEN}{_CHECK}{Style.RESET_ALL}"
-    FAILURE = f"{Fore.RED}{_CROSS}{Style.RESET_ALL}"
-    WARNING = f"{Fore.YELLOW}!{Style.RESET_ALL}"
-    INFO = f"{Fore.BLUE}{_BULLET}{Style.RESET_ALL}"
-    ARROW = f"{Fore.CYAN}{_ARROW}{Style.RESET_ALL}"
+    """Rich-based console logger with progress indicators."""
 
     def __init__(self, verbose: bool = False):
         """Initialize logger.
@@ -41,40 +51,46 @@ class Logger:
             verbose: Enable verbose output.
         """
         self.verbose = verbose
+        self.console = Console(theme=ALGOATLAS_THEME, legacy_windows=False)
+        self._status: Optional[Status] = None
 
     def success(self, message: str) -> None:
         """Print success message with green checkmark."""
-        print(f" {self.SUCCESS} {Fore.GREEN}{message}{Style.RESET_ALL}")
+        self.console.print(f" [success]{_CHECK}[/success] [success]{message}[/success]")
 
     def error(self, message: str) -> None:
         """Print error message with red X."""
-        print(f" {self.FAILURE} {Fore.RED}{message}{Style.RESET_ALL}")
+        self.console.print(f" [error]{_CROSS}[/error] [error]{message}[/error]")
 
     def warning(self, message: str) -> None:
         """Print warning message with yellow indicator."""
-        print(f" {self.WARNING} {Fore.YELLOW}{message}{Style.RESET_ALL}")
+        self.console.print(f" [warning]![/warning] [warning]{message}[/warning]")
 
     def info(self, message: str) -> None:
         """Print info message with blue bullet."""
-        print(f" {self.INFO} {message}")
+        self.console.print(f" [info]{_BULLET}[/info] {message}")
 
     def step(self, message: str) -> None:
         """Print step message with cyan arrow."""
-        print(f" {self.ARROW} {message}")
+        self.console.print(f" [step]{_ARROW}[/step] {message}")
 
     def debug(self, message: str) -> None:
         """Print debug message (only if verbose)."""
         if self.verbose:
-            print(f"   {Fore.LIGHTBLACK_EX}{message}{Style.RESET_ALL}")
+            self.console.print(f"   [debug]{message}[/debug]")
 
     def header(self, message: str) -> None:
-        """Print header message."""
-        print(f"\n{Fore.CYAN}{Style.BRIGHT}{message}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{'-' * len(message)}{Style.RESET_ALL}")
+        """Print header message with panel."""
+        self.console.print()
+        self.console.print(Panel(
+            Text(message, style="header", justify="center"),
+            border_style="cyan",
+            padding=(0, 2),
+        ))
 
     def blank(self) -> None:
         """Print blank line."""
-        print()
+        self.console.print()
 
     def prompt(self, message: str, default: Optional[str] = None) -> str:
         """Display prompt and get user input.
@@ -86,13 +102,7 @@ class Logger:
         Returns:
             User input or default value.
         """
-        if default:
-            prompt_text = f"{Fore.CYAN}? {message} [{default}]: {Style.RESET_ALL}"
-        else:
-            prompt_text = f"{Fore.CYAN}? {message}: {Style.RESET_ALL}"
-
-        response = input(prompt_text).strip()
-        return response if response else (default or "")
+        return Prompt.ask(f"[cyan]?[/cyan] {message}", default=default or "")
 
     def confirm(self, message: str, default: bool = True) -> bool:
         """Display confirmation prompt.
@@ -104,25 +114,73 @@ class Logger:
         Returns:
             True if confirmed, False otherwise.
         """
-        default_hint = "Y/n" if default else "y/N"
-        prompt_text = f"{Fore.CYAN}? {message} [{default_hint}]: {Style.RESET_ALL}"
-
-        response = input(prompt_text).strip().lower()
-
-        if not response:
-            return default
-        return response in ("y", "yes")
+        return Confirm.ask(f"[cyan]?[/cyan] {message}", default=default)
 
     def progress_start(self, message: str) -> None:
         """Print progress start message (no newline)."""
-        print(f" {self.INFO} {message}...", end="", flush=True)
+        self.console.print(f" [info]{_BULLET}[/info] {message}...", end="")
 
     def progress_end(self, success: bool = True) -> None:
         """Complete progress with success/failure indicator."""
         if success:
-            print(f" {self.SUCCESS}")
+            self.console.print(f" [success]{_CHECK}[/success]")
         else:
-            print(f" {self.FAILURE}")
+            self.console.print(f" [error]{_CROSS}[/error]")
+
+    @contextmanager
+    def status(self, message: str) -> Generator[Status, None, None]:
+        """Context manager for showing a spinner during long operations.
+
+        Args:
+            message: Status message to display.
+
+        Yields:
+            Status object that can be updated.
+
+        Example:
+            with logger.status("Processing...") as status:
+                do_work()
+                status.update("Almost done...")
+        """
+        with self.console.status(
+            f"[step]{message}[/step]",
+            spinner="line" if not _UNICODE else "dots",
+        ) as status:
+            yield status
+
+    def table(
+        self,
+        title: str,
+        columns: list[str],
+        rows: list[list[str]],
+        styles: Optional[list[str]] = None,
+    ) -> None:
+        """Print a formatted table.
+
+        Args:
+            title: Table title.
+            columns: List of column headers.
+            rows: List of row data (each row is a list of strings).
+            styles: Optional list of styles for each column.
+        """
+        table = Table(title=title, border_style="cyan", safe_box=not _UNICODE)
+
+        for i, col in enumerate(columns):
+            style = styles[i] if styles and i < len(styles) else None
+            table.add_column(col, style=style)
+
+        for row in rows:
+            table.add_row(*row)
+
+        self.console.print(table)
+
+    def rule(self, title: str = "") -> None:
+        """Print a horizontal rule with optional title.
+
+        Args:
+            title: Optional title to display in the rule.
+        """
+        self.console.rule(title, style="cyan")
 
 
 # Global logger instance
@@ -142,3 +200,12 @@ def get_logger(verbose: bool = False) -> Logger:
     if _logger is None:
         _logger = Logger(verbose=verbose)
     return _logger
+
+
+def reset_logger() -> None:
+    """Reset the global logger instance.
+
+    Useful for testing or reinitializing with different settings.
+    """
+    global _logger
+    _logger = None
