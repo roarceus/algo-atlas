@@ -70,6 +70,45 @@ def check_syntax(code: str) -> SyntaxResult:
         )
 
 
+def _build_exec_namespace() -> dict:
+    """Build namespace with common LeetCode imports for exec().
+
+    Provides typing, collections, and other stdlib modules commonly
+    used in LeetCode solutions so users don't need to include imports.
+
+    Returns:
+        Dict namespace pre-populated with common imports.
+    """
+    import collections
+    import bisect
+    import heapq
+    import math
+    import itertools
+    import functools
+    from typing import Dict, List, Optional, Set, Tuple
+
+    return {
+        "List": List,
+        "Dict": Dict,
+        "Optional": Optional,
+        "Set": Set,
+        "Tuple": Tuple,
+        "collections": collections,
+        "defaultdict": collections.defaultdict,
+        "deque": collections.deque,
+        "Counter": collections.Counter,
+        "OrderedDict": collections.OrderedDict,
+        "heapq": heapq,
+        "heappush": heapq.heappush,
+        "heappop": heapq.heappop,
+        "bisect": bisect,
+        "math": math,
+        "inf": float("inf"),
+        "itertools": itertools,
+        "functools": functools,
+    }
+
+
 def _extract_solution_class(code: str) -> Optional[type]:
     """Extract Solution class from code string.
 
@@ -79,8 +118,8 @@ def _extract_solution_class(code: str) -> Optional[type]:
     Returns:
         Solution class if found, None otherwise.
     """
-    # Create isolated namespace
-    namespace = {}
+    # Create namespace with common LeetCode imports
+    namespace = _build_exec_namespace()
 
     try:
         exec(code, namespace)
