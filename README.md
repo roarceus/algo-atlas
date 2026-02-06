@@ -22,7 +22,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 - **Solution Verifier** - Syntax checking and test case execution with timeout protection
 - **AI Documentation** - Generate detailed explanations using Claude Code CLI
 - **Organized Vault** - Store solutions by difficulty (Easy/Medium/Hard)
-- **Interactive CLI** - Colored console output with progress indicators
+- **Rich Terminal UI** - Beautiful console output with panels, spinners, and colored themes
 
 ### Vault Automation
 - **Auto-update Stats** - Automatically update vault README with problem counts
