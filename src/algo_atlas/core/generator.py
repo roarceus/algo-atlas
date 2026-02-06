@@ -28,12 +28,16 @@ def check_claude_installed() -> bool:
     return shutil.which("claude") is not None
 
 
-def call_claude(prompt: str, max_tokens: int = 4096) -> GenerationResult:
+def call_claude(prompt: str, max_tokens: int = 4096, timeout: int = 300) -> GenerationResult:
     """Call Claude CLI with a prompt.
+
+    Passes the prompt via stdin to avoid command-line length limits
+    and escaping issues on Windows.
 
     Args:
         prompt: The prompt to send to Claude.
         max_tokens: Maximum tokens in response.
+        timeout: Timeout in seconds (default 300s / 5 minutes).
 
     Returns:
         GenerationResult with response or error.
@@ -45,12 +49,13 @@ def call_claude(prompt: str, max_tokens: int = 4096) -> GenerationResult:
         )
 
     try:
-        # Run claude with prompt via stdin
+        # Pass prompt via stdin to avoid Windows command-line length/escaping issues
         result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "text"],
+            ["claude", "-p", "--output-format", "text"],
+            input=prompt,
             capture_output=True,
             text=True,
-            timeout=120,  # 2 minute timeout
+            timeout=timeout,
         )
 
         if result.returncode != 0:
@@ -67,7 +72,7 @@ def call_claude(prompt: str, max_tokens: int = 4096) -> GenerationResult:
     except subprocess.TimeoutExpired:
         return GenerationResult(
             success=False,
-            error="Claude CLI timed out after 120 seconds",
+            error=f"Claude CLI timed out after {timeout} seconds",
         )
     except FileNotFoundError:
         return GenerationResult(
