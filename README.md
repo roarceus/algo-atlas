@@ -47,6 +47,19 @@ This separation keeps the tool code separate from your solutions, making the vau
 | **Phase 2** | Vault Automation (Stats, Branches, PRs, Labels) | Completed |
 | **Phase 3** | Additional Features (Dry-run, Duplicates, Topic Index, Search, Batch) | Completed |
 | **Phase 4** | Rich Terminal UI, Verifier Typing Support, Claude CLI Stdin Fix | Completed |
+| **Phase 5** | Modular Refactoring (Split large files into focused modules) | Completed |
+
+### Stretch Goals
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Multi-language Support | Support solutions in Java, C++, JavaScript, etc. | Todo |
+| Rich Progress Bars | Spinners and progress bars for long operations | Todo |
+| Interactive Search | Arrow-key navigation for search results | Todo |
+| Solution Comparison | Side-by-side comparison of alternative solutions | Todo |
+| Vault Analytics | Charts and stats dashboard for solved problems | Todo |
+| Export Formats | Export documentation as PDF or HTML | Todo |
+| LeetCode Sync | Auto-fetch recently accepted solutions from LeetCode | Todo |
 
 ## Installation
 
@@ -298,24 +311,35 @@ algo-atlas/
 ├── src/algo_atlas/
 │   ├── __init__.py
 │   ├── __main__.py
-│   ├── cli.py              # Interactive CLI
+│   ├── cli/                    # CLI package
+│   │   ├── __init__.py         # Re-exports for backwards compatibility
+│   │   ├── args.py             # Argument parsing
+│   │   ├── batch.py            # Batch processing workflow
+│   │   ├── input_handlers.py   # User input and startup checks
+│   │   └── workflows.py        # Main workflow orchestration
 │   ├── config/
 │   │   ├── __init__.py
-│   │   └── settings.py     # Configuration management
+│   │   └── settings.py         # Configuration management
 │   ├── core/
 │   │   ├── __init__.py
-│   │   ├── generator.py    # Claude integration
-│   │   ├── scraper.py      # LeetCode GraphQL scraper
-│   │   └── verifier.py     # Solution verification
+│   │   ├── generator.py        # Claude integration
+│   │   ├── scraper.py          # LeetCode GraphQL scraper
+│   │   ├── test_parser.py      # Test case input/output parsing
+│   │   ├── timeout.py          # Cross-platform timeout execution
+│   │   └── verifier.py         # Solution verification
 │   └── utils/
 │       ├── __init__.py
-│       ├── file_manager.py # Vault file operations
-│       ├── logger.py       # Rich console output with Windows compatibility
-│       └── prompts.py      # Claude prompt templates
+│       ├── file_manager.py     # Re-exports for backwards compatibility
+│       ├── git_ops.py          # Git branch/commit/push operations
+│       ├── github_ops.py       # GitHub CLI and PR operations
+│       ├── logger.py           # Rich console output with Windows compatibility
+│       ├── prompts.py          # Claude prompt templates
+│       ├── vault_files.py      # Vault file/folder operations
+│       ├── vault_readme.py     # Vault README stats and topic index
+│       └── vault_search.py     # Problem search functionality
 ├── tests/
 ├── config/
 │   └── config.yaml.example
-├── docs/
 ├── pyproject.toml
 └── README.md
 ```

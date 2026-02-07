@@ -68,7 +68,7 @@ class TestValidateVaultRepo:
         """Test validation with None path and no configured vault."""
         # Patch get_vault_path to return None (no configured vault)
         monkeypatch.setattr(
-            "algo_atlas.utils.file_manager.get_vault_path",
+            "algo_atlas.utils.vault_files.get_vault_path",
             lambda: None
         )
         assert validate_vault_repo(None) is False
