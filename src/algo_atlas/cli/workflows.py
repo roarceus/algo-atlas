@@ -47,9 +47,9 @@ def scrape_problem_with_progress(logger, url: str) -> Optional[ProblemData]:
         ProblemData or None if failed.
     """
     logger.blank()
-    logger.step("Scraping problem from LeetCode...")
 
-    problem = scrape_problem(url)
+    with logger.status("Scraping problem from LeetCode..."):
+        problem = scrape_problem(url)
 
     if problem:
         logger.success(f"Found: {problem.number}. {problem.title} ({problem.difficulty})")
@@ -77,20 +77,20 @@ def verify_solution_with_progress(
         True if verification passed, False otherwise.
     """
     logger.blank()
-    logger.step("Verifying solution...")
 
     # Try to get expected outputs from Claude for additional test cases
     expected_outputs = None
     if problem.test_cases:
-        logger.info("Generating expected outputs for test cases...")
-        expected_outputs = generate_expected_outputs(problem, problem.test_cases)
+        with logger.status("Generating expected outputs for test cases..."):
+            expected_outputs = generate_expected_outputs(problem, problem.test_cases)
 
-    result = verify_solution(
-        solution_code,
-        problem.test_cases,
-        problem.examples,
-        expected_outputs,
-    )
+    with logger.status("Verifying solution..."):
+        result = verify_solution(
+            solution_code,
+            problem.test_cases,
+            problem.examples,
+            expected_outputs,
+        )
 
     if not result.syntax_valid:
         logger.error(f"Syntax error: {result.syntax_error}")
@@ -128,9 +128,9 @@ def generate_docs_with_progress(
         Generated markdown or None if failed.
     """
     logger.blank()
-    logger.step("Generating documentation with Claude...")
 
-    result = generate_documentation(problem, solution_code)
+    with logger.status("Generating documentation with Claude..."):
+        result = generate_documentation(problem, solution_code)
 
     if result.success and result.content:
         logger.success("Documentation generated")
@@ -241,8 +241,8 @@ def save_to_vault(
     logger.success(msg)
 
     # Push branch
-    logger.step("Pushing to remote...")
-    push_success, msg = push_branch(vault_path, branch_name)
+    with logger.status("Pushing to remote..."):
+        push_success, msg = push_branch(vault_path, branch_name)
     if not push_success:
         logger.error(msg)
         logger.info("Files saved locally. Push manually with:")
@@ -262,17 +262,17 @@ def save_to_vault(
         # Get labels for this PR
         labels = get_pr_labels(problem.difficulty, is_new_solution)
 
-        logger.step("Creating pull request...")
-        success, result = create_pull_request(
-            vault_path,
-            branch_name,
-            problem.number,
-            problem.title,
-            problem.difficulty,
-            problem.topic_tags,
-            leetcode_url,
-            labels=labels,
-        )
+        with logger.status("Creating pull request..."):
+            success, result = create_pull_request(
+                vault_path,
+                branch_name,
+                problem.number,
+                problem.title,
+                problem.difficulty,
+                problem.topic_tags,
+                leetcode_url,
+                labels=labels,
+            )
         if success:
             pr_url = result
             logger.success(f"PR created: {pr_url}")
