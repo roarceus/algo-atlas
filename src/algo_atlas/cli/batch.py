@@ -287,36 +287,39 @@ def run_batch(
     # Process each item
     results: list[BatchResult] = []
 
-    for i, item in enumerate(items, 1):
-        try:
-            result = process_batch_item(
-                logger=logger,
-                vault_path=vault_path,
-                item=item,
-                item_num=i,
-                total=len(items),
-                skip_verification=args.skip_verification,
-                dry_run=args.dry_run,
-            )
-            results.append(result)
+    with logger.progress("Processing problems", total=len(items)) as (progress, task_id):
+        for i, item in enumerate(items, 1):
+            try:
+                result = process_batch_item(
+                    logger=logger,
+                    vault_path=vault_path,
+                    item=item,
+                    item_num=i,
+                    total=len(items),
+                    skip_verification=args.skip_verification,
+                    dry_run=args.dry_run,
+                )
+                results.append(result)
+                progress.update(task_id, advance=1)
 
-            if not result.success and not args.continue_on_error:
-                logger.error("Stopping batch due to error (use --continue-on-error to skip)")
-                break
+                if not result.success and not args.continue_on_error:
+                    logger.error("Stopping batch due to error (use --continue-on-error to skip)")
+                    break
 
-        except KeyboardInterrupt:
-            logger.blank()
-            logger.warning("Batch processing interrupted by user")
-            break
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
-            results.append(BatchResult(
-                url=item.url,
-                success=False,
-                error=str(e),
-            ))
-            if not args.continue_on_error:
+            except KeyboardInterrupt:
+                logger.blank()
+                logger.warning("Batch processing interrupted by user")
                 break
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                results.append(BatchResult(
+                    url=item.url,
+                    success=False,
+                    error=str(e),
+                ))
+                progress.update(task_id, advance=1)
+                if not args.continue_on_error:
+                    break
 
     # Display summary
     display_batch_summary(logger, results, len(items))
