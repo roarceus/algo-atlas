@@ -6,6 +6,10 @@ from typing import Generator, Optional
 
 from rich.console import Console
 from rich.panel import Panel
+from rich.progress import (
+    BarColumn, MofNCompleteColumn, Progress,
+    SpinnerColumn, TextColumn, TimeElapsedColumn,
+)
 from rich.prompt import Confirm, Prompt
 from rich.status import Status
 from rich.table import Table
@@ -14,7 +18,7 @@ from rich.theme import Theme
 
 # Custom theme for AlgoAtlas
 ALGOATLAS_THEME = Theme({
-    "success": "bold green",
+    "success": "green",
     "error": "bold red",
     "warning": "bold yellow",
     "info": "blue",
@@ -31,6 +35,29 @@ def _supports_unicode() -> bool:
         return encoding.lower() in ("utf-8", "utf8")
     except AttributeError:
         return False
+
+
+def _is_terminal() -> bool:
+    """Detect if we're running in an interactive terminal.
+
+    On Windows with Git Bash (MINGW64) or VS Code's integrated terminal,
+    sys.stdout.isatty() falsely returns False. We check environment
+    variables that indicate a real terminal is present.
+    """
+    if sys.stdout.isatty():
+        return True
+
+    import os
+    # TERM set to something useful means a terminal emulator is present
+    term = os.environ.get("TERM", "")
+    if term and term != "dumb":
+        return True
+
+    # Windows Terminal sets WT_SESSION
+    if os.environ.get("WT_SESSION"):
+        return True
+
+    return False
 
 
 # Use ASCII-safe symbols when Unicode is not supported
@@ -51,8 +78,16 @@ class Logger:
             verbose: Enable verbose output.
         """
         self.verbose = verbose
-        self.console = Console(theme=ALGOATLAS_THEME, legacy_windows=False)
+        # On Git Bash / MINGW64, isatty() returns False even in a real
+        # terminal.  Use env-var heuristics to detect and force Rich on.
+        force = True if not sys.stdout.isatty() and _is_terminal() else None
+        self.console = Console(
+            theme=ALGOATLAS_THEME,
+            legacy_windows=False,
+            force_terminal=force,
+        )
         self._status: Optional[Status] = None
+        self._progress_active: bool = False
 
     def success(self, message: str) -> None:
         """Print success message with green checkmark."""
@@ -128,25 +163,67 @@ class Logger:
             self.console.print(f" [error]{_CROSS}[/error]")
 
     @contextmanager
-    def status(self, message: str) -> Generator[Status, None, None]:
+    def status(self, message: str) -> Generator[Optional[Status], None, None]:
         """Context manager for showing a spinner during long operations.
+
+        When a progress bar is active, degrades to a simple step message
+        instead of nesting a live display (Rich can't nest live displays).
 
         Args:
             message: Status message to display.
 
         Yields:
-            Status object that can be updated.
+            Status object that can be updated, or None if degraded.
 
         Example:
             with logger.status("Processing...") as status:
                 do_work()
-                status.update("Almost done...")
+                if status:
+                    status.update("Almost done...")
         """
-        with self.console.status(
-            f"[step]{message}[/step]",
-            spinner="line" if not _UNICODE else "dots",
-        ) as status:
-            yield status
+        if self._progress_active:
+            self.step(message)
+            yield None
+        else:
+            with self.console.status(
+                f"[step]{message}[/step]",
+                spinner="line" if not _UNICODE else "dots",
+            ) as status:
+                yield status
+
+    @contextmanager
+    def progress(self, description: str, total: int) -> Generator[tuple[Progress, int], None, None]:
+        """Context manager for showing a progress bar during batch operations.
+
+        Args:
+            description: Description text shown next to the progress bar.
+            total: Total number of items to process.
+
+        Yields:
+            Tuple of (Progress object, task_id) for calling progress.update().
+
+        Example:
+            with logger.progress("Processing", total=10) as (progress, task_id):
+                for item in items:
+                    do_work(item)
+                    progress.update(task_id, advance=1)
+        """
+        spinner = "line" if not _UNICODE else "dots"
+        progress = Progress(
+            SpinnerColumn(spinner),
+            TextColumn("[step]{task.description}[/step]"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
+            console=self.console,
+        )
+        self._progress_active = True
+        try:
+            with progress:
+                task_id = progress.add_task(description, total=total)
+                yield progress, task_id
+        finally:
+            self._progress_active = False
 
     def table(
         self,

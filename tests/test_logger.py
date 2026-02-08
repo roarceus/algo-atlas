@@ -179,6 +179,41 @@ class TestGetLogger:
         assert logger.verbose is True
 
 
+class TestProgress:
+    """Tests for progress bar and status degradation."""
+
+    def test_progress_context_manager(self):
+        """Test progress bar creates, advances, and completes."""
+        logger = Logger()
+        with logger.progress("Testing", total=3) as (progress, task_id):
+            for _ in range(3):
+                progress.update(task_id, advance=1)
+            assert progress.tasks[0].completed == 3
+
+    def test_progress_sets_active_flag(self):
+        """Test _progress_active flag lifecycle."""
+        logger = Logger()
+        assert logger._progress_active is False
+        with logger.progress("Testing", total=1) as (progress, task_id):
+            assert logger._progress_active is True
+            progress.update(task_id, advance=1)
+        assert logger._progress_active is False
+
+    def test_status_degrades_during_progress(self, capsys):
+        """Test status yields None when progress bar is active."""
+        logger = Logger()
+        with logger.progress("Testing", total=1) as (progress, task_id):
+            with logger.status("Inner work...") as status:
+                assert status is None
+            progress.update(task_id, advance=1)
+
+    def test_status_works_normally_without_progress(self):
+        """Test status yields a real Status object when no progress is active."""
+        logger = Logger()
+        with logger.status("Working...") as status:
+            assert status is not None
+
+
 class TestResetLogger:
     """Tests for reset_logger function."""
 
