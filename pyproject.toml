@@ -100,3 +100,11 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
 ]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/algo_atlas/__init__.py:__version__"]
+branch = "main"
+commit_message = "chore(release): {version}"
+major_on_zero = false
+tag_format = "v{version}"
