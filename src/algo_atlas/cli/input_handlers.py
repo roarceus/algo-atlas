@@ -6,7 +6,7 @@ from typing import Optional
 from algo_atlas.config.settings import get_settings
 from algo_atlas.core.generator import check_claude_installed
 from algo_atlas.core.scraper import validate_leetcode_url
-from algo_atlas.languages import get_language, get_language_by_extension, list_languages
+from algo_atlas.languages import get_language, list_languages
 from algo_atlas.utils.vault_files import validate_vault_repo
 
 # File extensions recognized as solution files

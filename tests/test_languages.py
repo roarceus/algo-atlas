@@ -1,14 +1,12 @@
 """Tests for the language support registry and PythonLanguage."""
 
-import pytest
-
 from algo_atlas.languages import (
     default_language,
     get_language,
     get_language_by_extension,
     list_languages,
 )
-from algo_atlas.languages.base import LanguageSupport, SyntaxResult, TestResult
+from algo_atlas.languages.base import LanguageSupport
 from algo_atlas.languages.python import PythonLanguage
 
 
@@ -45,7 +43,7 @@ class TestRegistry:
         """Test listing all registered languages."""
         langs = list_languages()
         assert len(langs) >= 1
-        slugs = [l.slug for l in langs]
+        slugs = [info.slug for info in langs]
         assert "python3" in slugs
 
     def test_default_language(self):
