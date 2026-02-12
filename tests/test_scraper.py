@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from algo_atlas.core.scraper import (
+    _get_code_snippet,
     extract_test_cases,
     get_problem_slug,
     scrape_problem,
@@ -96,6 +97,39 @@ class TestExtractTestCases:
         assert result == ["[1,2,3]", "5"]
 
 
+class TestGetCodeSnippet:
+    """Tests for _get_code_snippet function."""
+
+    def test_default_returns_python3(self, mock_graphql_response):
+        """Test default (no language) returns python3 snippet."""
+        snippets = mock_graphql_response["data"]["question"]["codeSnippets"]
+        result = _get_code_snippet(snippets)
+        assert "class Solution" in result
+
+    def test_explicit_python3(self, mock_graphql_response):
+        """Test explicit python3 returns python snippet."""
+        snippets = mock_graphql_response["data"]["question"]["codeSnippets"]
+        result = _get_code_snippet(snippets, language="python3")
+        assert "class Solution" in result
+
+    def test_javascript_snippet(self, mock_graphql_response):
+        """Test javascript returns JS snippet."""
+        snippets = mock_graphql_response["data"]["question"]["codeSnippets"]
+        result = _get_code_snippet(snippets, language="javascript")
+        assert "var twoSum" in result
+
+    def test_unknown_language_returns_empty(self, mock_graphql_response):
+        """Test unknown language returns empty string."""
+        snippets = mock_graphql_response["data"]["question"]["codeSnippets"]
+        result = _get_code_snippet(snippets, language="haskell")
+        assert result == ""
+
+    def test_empty_snippets(self):
+        """Test empty snippets list returns empty string."""
+        assert _get_code_snippet([]) == ""
+        assert _get_code_snippet([], language="python3") == ""
+
+
 class TestScrapeProblem:
     """Tests for scrape_problem function."""
 
@@ -116,6 +150,29 @@ class TestScrapeProblem:
         assert result.title == "Two Sum"
         assert result.difficulty == "Easy"
         assert "Array" in result.topic_tags
+
+    @patch("algo_atlas.core.scraper._make_request")
+    def test_scrape_preserves_code_snippets_raw(self, mock_request, mock_graphql_response):
+        """Test that scraping preserves raw code snippets."""
+        mock_request.return_value = mock_graphql_response["data"]["question"]
+
+        result = scrape_problem("https://leetcode.com/problems/two-sum/")
+        assert result is not None
+        assert len(result.code_snippets_raw) == 2
+        slugs = [s["langSlug"] for s in result.code_snippets_raw]
+        assert "python3" in slugs
+        assert "javascript" in slugs
+
+    @patch("algo_atlas.core.scraper._make_request")
+    def test_scrape_with_language(self, mock_request, mock_graphql_response):
+        """Test scraping with explicit language selects correct snippet."""
+        mock_request.return_value = mock_graphql_response["data"]["question"]
+
+        result = scrape_problem(
+            "https://leetcode.com/problems/two-sum/", language="javascript"
+        )
+        assert result is not None
+        assert "var twoSum" in result.code_snippet
 
     @patch("algo_atlas.core.scraper._make_request")
     def test_scrape_failure(self, mock_request):

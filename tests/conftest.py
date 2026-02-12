@@ -110,7 +110,12 @@ def mock_graphql_response():
                         "lang": "Python3",
                         "langSlug": "python3",
                         "code": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass",
-                    }
+                    },
+                    {
+                        "lang": "JavaScript",
+                        "langSlug": "javascript",
+                        "code": "/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nvar twoSum = function(nums, target) {\n    \n};",
+                    },
                 ],
                 "topicTags": [
                     {"name": "Array", "slug": "array"},

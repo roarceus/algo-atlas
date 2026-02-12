@@ -6,7 +6,11 @@ from typing import Optional
 from algo_atlas.config.settings import get_settings
 from algo_atlas.core.generator import check_claude_installed
 from algo_atlas.core.scraper import validate_leetcode_url
+from algo_atlas.languages import get_language, list_languages
 from algo_atlas.utils.vault_files import validate_vault_repo
+
+# File extensions recognized as solution files
+_KNOWN_EXTENSIONS = {lang.file_extension for lang in list_languages()}
 
 
 def startup_checks(logger, dry_run: bool = False) -> tuple[bool, Optional[Path]]:
@@ -97,8 +101,11 @@ def get_solution_code(logger) -> Optional[str]:
 
     first_line = input().strip()
 
-    # Check if it's a file path
-    if first_line.endswith(".py") or Path(first_line).exists():
+    # Check if it's a file path (any known language extension or existing file)
+    def _is_solution_file(text: str) -> bool:
+        return any(text.endswith(ext) for ext in _KNOWN_EXTENSIONS) or Path(text).exists()
+
+    if _is_solution_file(first_line):
         path = Path(first_line)
         if path.exists():
             try:
@@ -127,3 +134,26 @@ def get_solution_code(logger) -> Optional[str]:
 
     logger.error("No code provided")
     return None
+
+
+def get_language_choice(logger, cli_language: Optional[str] = None) -> str:
+    """Resolve the language slug to use.
+
+    Priority: CLI flag > config setting > default ("python3").
+
+    Args:
+        logger: Logger instance.
+        cli_language: Language slug from --language flag (may be None).
+
+    Returns:
+        Resolved language slug.
+    """
+    if cli_language is not None:
+        lang = get_language(cli_language)
+        if lang is None:
+            logger.warning(f"Unknown language '{cli_language}', falling back to default")
+        else:
+            return cli_language
+
+    settings = get_settings()
+    return settings.language.default

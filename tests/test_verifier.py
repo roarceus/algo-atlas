@@ -267,3 +267,40 @@ class TestVerifySolution:
         )
         assert result.syntax_valid is True
         assert result.tests_passed > 0
+
+
+class TestExplicitLanguageParam:
+    """Tests for verifier functions with explicit language parameter."""
+
+    def test_check_syntax_with_python3(self, valid_solution):
+        """Test check_syntax with explicit language='python3'."""
+        result = check_syntax(valid_solution, language="python3")
+        assert result.valid is True
+
+    def test_run_test_case_with_python3(self, valid_solution):
+        """Test run_test_case with explicit language='python3'."""
+        result = run_test_case(
+            solution_code=valid_solution,
+            input_args=[[2, 7, 11, 15], 9],
+            expected_output=[0, 1],
+            language="python3",
+        )
+        assert result.passed is True
+
+    def test_verify_solution_with_python3(self, valid_solution, sample_problem):
+        """Test verify_solution with explicit language='python3'."""
+        result = verify_solution(
+            solution_code=valid_solution,
+            test_cases=sample_problem.test_cases,
+            examples=sample_problem.examples,
+            language="python3",
+        )
+        assert result.syntax_valid is True
+        assert result.all_passed is True
+
+    def test_unsupported_language_raises(self, valid_solution):
+        """Test that unsupported language raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Unsupported language"):
+            check_syntax(valid_solution, language="cobol")
