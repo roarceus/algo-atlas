@@ -23,6 +23,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Preview generated documentation without saving to vault",
     )
+    parser.add_argument(
+        "-l", "--language",
+        default=None,
+        help="Language slug for solution (e.g., python3, javascript). Defaults to config setting.",
+    )
 
     # Search subcommand
     search_parser = subparsers.add_parser(
@@ -73,6 +78,11 @@ def parse_args() -> argparse.Namespace:
         "--continue-on-error",
         action="store_true",
         help="Continue processing remaining items if one fails",
+    )
+    batch_parser.add_argument(
+        "-l", "--language",
+        default=None,
+        help="Language slug for solutions (e.g., python3, javascript). Defaults to config setting.",
     )
 
     return parser.parse_args()

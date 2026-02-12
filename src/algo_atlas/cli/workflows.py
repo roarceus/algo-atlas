@@ -36,7 +36,9 @@ from algo_atlas.utils.file_manager import (
 )
 
 
-def scrape_problem_with_progress(logger, url: str) -> Optional[ProblemData]:
+def scrape_problem_with_progress(
+    logger, url: str, language: Optional[str] = None,
+) -> Optional[ProblemData]:
     """Scrape problem with progress indication.
 
     Args:
@@ -49,7 +51,7 @@ def scrape_problem_with_progress(logger, url: str) -> Optional[ProblemData]:
     logger.blank()
 
     with logger.status("Scraping problem from LeetCode..."):
-        problem = scrape_problem(url)
+        problem = scrape_problem(url, language=language)
 
     if problem:
         logger.success(f"Found: {problem.number}. {problem.title} ({problem.difficulty})")
@@ -65,13 +67,15 @@ def verify_solution_with_progress(
     logger,
     solution_code: str,
     problem: ProblemData,
+    language: Optional[str] = None,
 ) -> bool:
     """Verify solution with progress indication.
 
     Args:
         logger: Logger instance.
-        solution_code: Python solution code.
+        solution_code: Solution code.
         problem: Scraped problem data.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         True if verification passed, False otherwise.
@@ -90,6 +94,7 @@ def verify_solution_with_progress(
             problem.test_cases,
             problem.examples,
             expected_outputs,
+            language=language,
         )
 
     if not result.syntax_valid:
@@ -147,6 +152,7 @@ def save_to_vault(
     solution_code: str,
     documentation: str,
     leetcode_url: str,
+    language: Optional[str] = None,
 ) -> bool:
     """Save solution and documentation to vault with git workflow.
 
@@ -159,12 +165,19 @@ def save_to_vault(
         solution_code: Solution code.
         documentation: Generated documentation.
         leetcode_url: URL to the LeetCode problem.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         True if saved successfully.
     """
     logger.blank()
     logger.step("Saving to vault...")
+
+    # Resolve solution filename from language
+    from algo_atlas.languages import default_language, get_language as _get_lang
+
+    lang = _get_lang(language) if language else default_language()
+    solution_filename = lang.info().solution_filename
 
     # Check if problem already exists (used for labels and info)
     existing = check_problem_exists(vault_path, problem.number)
@@ -197,11 +210,11 @@ def save_to_vault(
         return False
 
     # Save solution
-    solution_path = folder / "solution.py"
-    if save_solution_file(folder, solution_code):
+    solution_path = folder / solution_filename
+    if save_solution_file(folder, solution_code, filename=solution_filename):
         logger.success(f"Saved: {solution_path}")
     else:
-        logger.error("Failed to save solution.py")
+        logger.error(f"Failed to save {solution_filename}")
         checkout_main(vault_path)
         return False
 
@@ -297,6 +310,7 @@ def display_dry_run_output(
     problem: ProblemData,
     solution_code: str,
     documentation: str,
+    language: Optional[str] = None,
 ) -> None:
     """Display generated documentation in dry-run mode.
 
@@ -305,7 +319,13 @@ def display_dry_run_output(
         problem: Problem data.
         solution_code: Solution code.
         documentation: Generated documentation.
+        language: Language slug. Defaults to Python when None.
     """
+    from algo_atlas.languages import default_language, get_language as _get_lang
+
+    lang = _get_lang(language) if language else default_language()
+    solution_filename = lang.info().solution_filename
+
     logger.blank()
     logger.header("DRY RUN OUTPUT")
     logger.blank()
@@ -313,7 +333,7 @@ def display_dry_run_output(
     logger.info(f"Would save to: {problem.difficulty}/{problem.number}. {problem.title}/")
     logger.blank()
 
-    logger.step("solution.py:")
+    logger.step(f"{solution_filename}:")
     logger.blank()
     print(solution_code)
     logger.blank()
@@ -326,13 +346,19 @@ def display_dry_run_output(
     logger.success("Dry run complete - no files were saved")
 
 
-def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> bool:
+def run_workflow(
+    logger,
+    vault_path: Optional[Path],
+    dry_run: bool = False,
+    language: Optional[str] = None,
+) -> bool:
     """Run the main workflow for one problem.
 
     Args:
         logger: Logger instance.
         vault_path: Path to vault (None if dry-run).
         dry_run: If True, preview output without saving.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         True if workflow completed successfully.
@@ -345,7 +371,7 @@ def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> b
         return False
 
     # Scrape problem
-    problem = scrape_problem_with_progress(logger, url)
+    problem = scrape_problem_with_progress(logger, url, language=language)
     if not problem:
         return False
 
@@ -355,7 +381,7 @@ def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> b
         return False
 
     # Verify solution
-    if not verify_solution_with_progress(logger, solution_code, problem):
+    if not verify_solution_with_progress(logger, solution_code, problem, language=language):
         if not logger.confirm("Continue despite verification issues?", default=False):
             return False
 
@@ -371,11 +397,13 @@ def run_workflow(logger, vault_path: Optional[Path], dry_run: bool = False) -> b
 
     # Dry run: display output and exit
     if dry_run:
-        display_dry_run_output(logger, problem, solution_code, documentation)
+        display_dry_run_output(logger, problem, solution_code, documentation, language=language)
         return True
 
     # Save to vault
-    save_to_vault(logger, vault_path, problem, solution_code, documentation, url)
+    save_to_vault(
+        logger, vault_path, problem, solution_code, documentation, url, language=language,
+    )
 
     return True
 
@@ -440,10 +468,14 @@ def main():
     """Main entry point for AlgoAtlas CLI."""
     from algo_atlas.cli.args import parse_args
     from algo_atlas.cli.batch import run_batch
-    from algo_atlas.cli.input_handlers import startup_checks
+    from algo_atlas.cli.input_handlers import get_language_choice, startup_checks
 
     args = parse_args()
     logger = get_logger()
+
+    # Resolve language (CLI flag > config > default)
+    cli_language = getattr(args, "language", None)
+    language = get_language_choice(logger, cli_language)
 
     # Handle search command
     if args.command == "search":
@@ -486,7 +518,7 @@ def main():
     # Main loop
     while True:
         try:
-            run_workflow(logger, vault_path, dry_run=args.dry_run)
+            run_workflow(logger, vault_path, dry_run=args.dry_run, language=language)
 
             logger.blank()
             if not logger.confirm("Process another problem?", default=True):

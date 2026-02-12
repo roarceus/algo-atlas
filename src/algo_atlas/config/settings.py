@@ -31,6 +31,13 @@ class ClaudeSettings:
 
 
 @dataclass
+class LanguageSettings:
+    """Language selection settings."""
+
+    default: str = "python3"
+
+
+@dataclass
 class Settings:
     """Application settings."""
 
@@ -38,6 +45,7 @@ class Settings:
     leetcode: LeetCodeSettings = field(default_factory=LeetCodeSettings)
     verifier: VerifierSettings = field(default_factory=VerifierSettings)
     claude: ClaudeSettings = field(default_factory=ClaudeSettings)
+    language: LanguageSettings = field(default_factory=LanguageSettings)
 
     @classmethod
     def load(cls, config_path: Optional[str] = None) -> "Settings":
@@ -84,6 +92,7 @@ class Settings:
         leetcode_data = data.get("leetcode", {})
         verifier_data = data.get("verifier", {})
         claude_data = data.get("claude", {})
+        language_data = data.get("language", {})
 
         return cls(
             vault_path=data.get("vault_path"),
@@ -97,6 +106,9 @@ class Settings:
             ),
             claude=ClaudeSettings(
                 model=claude_data.get("model"),
+            ),
+            language=LanguageSettings(
+                default=language_data.get("default", "python3"),
             ),
         )
 

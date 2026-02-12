@@ -156,6 +156,7 @@ def process_batch_item(
     total: int,
     skip_verification: bool = False,
     dry_run: bool = False,
+    language: Optional[str] = None,
 ) -> BatchResult:
     """Process a single batch item.
 
@@ -167,6 +168,7 @@ def process_batch_item(
         total: Total number of items.
         skip_verification: If True, skip test case verification.
         dry_run: If True, preview output without saving.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         BatchResult with processing outcome.
@@ -203,7 +205,7 @@ def process_batch_item(
         )
 
     # Scrape problem
-    problem = scrape_problem_with_progress(logger, item.url)
+    problem = scrape_problem_with_progress(logger, item.url, language=language)
     if not problem:
         return BatchResult(
             url=item.url,
@@ -213,7 +215,7 @@ def process_batch_item(
 
     # Verify solution (unless skipped)
     if not skip_verification:
-        if not verify_solution_with_progress(logger, solution_code, problem):
+        if not verify_solution_with_progress(logger, solution_code, problem, language=language):
             logger.warning("Verification issues detected, continuing anyway...")
 
     # Generate documentation
@@ -228,7 +230,7 @@ def process_batch_item(
 
     # Dry run: display output and return success
     if dry_run:
-        display_dry_run_output(logger, problem, solution_code, documentation)
+        display_dry_run_output(logger, problem, solution_code, documentation, language=language)
         return BatchResult(
             url=item.url,
             success=True,
@@ -236,7 +238,9 @@ def process_batch_item(
         )
 
     # Save to vault
-    if save_to_vault(logger, vault_path, problem, solution_code, documentation, item.url):
+    if save_to_vault(
+        logger, vault_path, problem, solution_code, documentation, item.url, language=language,
+    ):
         return BatchResult(
             url=item.url,
             success=True,
@@ -264,6 +268,11 @@ def run_batch(
         args: Parsed command-line arguments.
     """
     batch_file = Path(args.file)
+
+    # Resolve language
+    from algo_atlas.cli.input_handlers import get_language_choice
+
+    language = get_language_choice(logger, getattr(args, "language", None))
 
     logger.header("AlgoAtlas Batch Processing")
     logger.info(f"Batch file: {batch_file}")
@@ -298,6 +307,7 @@ def run_batch(
                     total=len(items),
                     skip_verification=args.skip_verification,
                     dry_run=args.dry_run,
+                    language=language,
                 )
                 results.append(result)
                 progress.update(task_id, advance=1)

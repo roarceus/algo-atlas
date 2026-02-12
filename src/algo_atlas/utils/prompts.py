@@ -18,7 +18,7 @@ DOCUMENTATION_PROMPT = """You are a technical documentation expert. Generate doc
 {examples}
 
 ## Solution Code
-```python
+```{code_fence}
 {solution_code}
 ```
 
@@ -142,6 +142,7 @@ def get_documentation_prompt(
     constraints: list[str],
     examples: list[dict],
     solution_code: str,
+    code_fence: str = "python",
 ) -> str:
     """Format the documentation generation prompt.
 
@@ -153,7 +154,8 @@ def get_documentation_prompt(
         description: Problem description.
         constraints: List of constraints.
         examples: List of example dicts with input/output.
-        solution_code: Python solution code.
+        solution_code: Solution code.
+        code_fence: Language identifier for code fence (default: "python").
 
     Returns:
         Formatted prompt string.
@@ -188,6 +190,7 @@ def get_documentation_prompt(
         constraints=constraints_str,
         examples=examples_str,
         solution_code=solution_code,
+        code_fence=code_fence,
     )
 
 
