@@ -13,7 +13,8 @@ from algo_atlas.core.test_parser import (
     _parse_expected_output,
     _parse_test_input,
 )
-from algo_atlas.languages import default_language
+from algo_atlas.languages import default_language, get_language
+from algo_atlas.languages.base import LanguageSupport
 
 # Re-export from languages.base so existing imports keep working
 from algo_atlas.languages.base import SyntaxResult, TestResult  # noqa: F401
@@ -92,21 +93,43 @@ def _group_test_case_inputs(test_cases: list[str], args_per_case: int) -> list[l
     return grouped
 
 
+def _resolve_language(language: Optional[str] = None) -> LanguageSupport:
+    """Resolve a language slug to a LanguageSupport instance.
+
+    Args:
+        language: Language slug (e.g. "python3", "javascript").
+                  When None, returns the default language.
+
+    Returns:
+        LanguageSupport instance.
+
+    Raises:
+        ValueError: If the language slug is not recognized.
+    """
+    if language is None:
+        return default_language()
+    lang = get_language(language)
+    if lang is None:
+        raise ValueError(f"Unsupported language: {language}")
+    return lang
+
+
 # ---------------------------------------------------------------------------
-# Public API — thin wrappers that delegate to the default language
+# Public API — thin wrappers that delegate to the resolved language
 # ---------------------------------------------------------------------------
 
 
-def check_syntax(code: str) -> SyntaxResult:
-    """Check syntax of code using the default language.
+def check_syntax(code: str, language: Optional[str] = None) -> SyntaxResult:
+    """Check syntax of code.
 
     Args:
         code: Source code to check.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         SyntaxResult with validation status.
     """
-    return default_language().check_syntax(code)
+    return _resolve_language(language).check_syntax(code)
 
 
 def run_test_case(
@@ -114,19 +137,23 @@ def run_test_case(
     input_args: list[Any],
     expected_output: Any,
     timeout: Optional[int] = None,
+    language: Optional[str] = None,
 ) -> TestResult:
-    """Run a single test case against solution using the default language.
+    """Run a single test case against solution.
 
     Args:
         solution_code: Solution code with Solution class.
         input_args: Input arguments for the method.
         expected_output: Expected return value.
         timeout: Execution timeout in seconds.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         TestResult with execution details.
     """
-    return default_language().run_test_case(solution_code, input_args, expected_output, timeout)
+    return _resolve_language(language).run_test_case(
+        solution_code, input_args, expected_output, timeout
+    )
 
 
 def run_test_cases(
@@ -134,6 +161,7 @@ def run_test_cases(
     test_cases: list[str],
     examples: list[dict],
     expected_outputs: Optional[list[Any]] = None,
+    language: Optional[str] = None,
 ) -> VerificationResult:
     """Run all test cases against solution.
 
@@ -143,11 +171,12 @@ def run_test_cases(
         examples: Parsed examples with input/output.
         expected_outputs: Optional list of expected outputs for test_cases
                          (provided by Claude or other source).
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         VerificationResult with all test outcomes.
     """
-    lang = default_language()
+    lang = _resolve_language(language)
 
     # First check syntax
     syntax_result = lang.check_syntax(solution_code)
@@ -223,6 +252,7 @@ def verify_solution(
     test_cases: list[str],
     examples: list[dict],
     expected_outputs: Optional[list[Any]] = None,
+    language: Optional[str] = None,
 ) -> VerificationResult:
     """Full solution verification with syntax check and test execution.
 
@@ -231,8 +261,9 @@ def verify_solution(
         test_cases: Raw test case strings.
         examples: Parsed examples with expected outputs.
         expected_outputs: Optional list of expected outputs for additional test_cases.
+        language: Language slug. Defaults to Python when None.
 
     Returns:
         VerificationResult with complete verification status.
     """
-    return run_test_cases(solution_code, test_cases, examples, expected_outputs)
+    return run_test_cases(solution_code, test_cases, examples, expected_outputs, language)
