@@ -64,6 +64,11 @@ class ProblemData:
     code_snippet: str
     topic_tags: list[str]
     hints: list[str]
+    code_snippets_raw: list[dict] = None
+
+    def __post_init__(self):
+        if self.code_snippets_raw is None:
+            self.code_snippets_raw = []
 
 
 def validate_leetcode_url(url: str) -> bool:
@@ -226,32 +231,60 @@ def extract_test_cases(example_testcases: str) -> list[str]:
     return cases
 
 
-def _get_python_snippet(code_snippets: list[dict]) -> str:
-    """Extract Python3 code snippet from available snippets.
+def _get_code_snippet(
+    code_snippets: list[dict],
+    language: Optional[str] = None,
+) -> str:
+    """Extract code snippet for the requested language.
 
     Args:
-        code_snippets: List of code snippet dicts.
+        code_snippets: List of code snippet dicts from GraphQL.
+        language: Language slug (e.g. "python3", "javascript").
+                  Defaults to Python when None.
 
     Returns:
-        Python3 code snippet or empty string.
+        Code snippet string or empty string if not found.
     """
-    for snippet in code_snippets:
-        if snippet.get("langSlug") == "python3":
-            return snippet.get("code", "")
+    if language is None:
+        # Default: try python3 first, fall back to python
+        for snippet in code_snippets:
+            if snippet.get("langSlug") == "python3":
+                return snippet.get("code", "")
+        for snippet in code_snippets:
+            if snippet.get("langSlug") == "python":
+                return snippet.get("code", "")
+        return ""
 
-    # Fallback to python if python3 not available
+    # Look up by the language registry if available
+    try:
+        from algo_atlas.languages import get_language
+
+        lang = get_language(language)
+        if lang is not None:
+            slugs = lang.info().leetcode_slugs
+            for slug in slugs:
+                for snippet in code_snippets:
+                    if snippet.get("langSlug") == slug:
+                        return snippet.get("code", "")
+            return ""
+    except ImportError:
+        pass
+
+    # Direct slug match as fallback
     for snippet in code_snippets:
-        if snippet.get("langSlug") == "python":
+        if snippet.get("langSlug") == language:
             return snippet.get("code", "")
 
     return ""
 
 
-def scrape_problem(url: str) -> Optional[ProblemData]:
+def scrape_problem(url: str, language: Optional[str] = None) -> Optional[ProblemData]:
     """Scrape LeetCode problem data from URL.
 
     Args:
         url: LeetCode problem URL.
+        language: Language slug for code snippet selection.
+                  Defaults to Python when None.
 
     Returns:
         ProblemData if successful, None otherwise.
@@ -293,7 +326,8 @@ def scrape_problem(url: str) -> Optional[ProblemData]:
         examples=examples,
         constraints=constraints,
         test_cases=test_cases,
-        code_snippet=_get_python_snippet(code_snippets),
+        code_snippet=_get_code_snippet(code_snippets, language),
         topic_tags=topic_tags,
         hints=hints,
+        code_snippets_raw=code_snippets,
     )
