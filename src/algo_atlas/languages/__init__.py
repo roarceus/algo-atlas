@@ -88,7 +88,9 @@ def _ensure_registered() -> None:
         return
     # Import here to avoid circular imports
     from algo_atlas.languages.python import PythonLanguage
+    from algo_atlas.languages.javascript import JavaScriptLanguage
     register(PythonLanguage())
+    register(JavaScriptLanguage())
 
 
 __all__ = [
