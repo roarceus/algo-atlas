@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-02-13)
+
+### Features
+
+- Add JavaScript method extraction and param counting
+  ([`ecc9366`](https://github.com/roarceus/algo-atlas/commit/ecc93669ecd6081f1b6456131a672d98eda06dd1))
+
+- Add JavaScript syntax checker
+  ([`21eee22`](https://github.com/roarceus/algo-atlas/commit/21eee226f0decbe206607e0381187c93abeac880))
+
+- Implement JavaScript test runner via Node.js subprocess
+  ([`0e4a3e5`](https://github.com/roarceus/algo-atlas/commit/0e4a3e5102ce97dd192c4a4f0d1db6093a57f20f))
+
+### Testing
+
+- Add JavaScript language support tests
+  ([`f79ef64`](https://github.com/roarceus/algo-atlas/commit/f79ef64b0cc269c1baee56d414ee0fa1fbb0a561))
+
+
 ## v1.1.0 (2026-02-12)
 
 ### Bug Fixes
