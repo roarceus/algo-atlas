@@ -1,5 +1,6 @@
 """JavaScript language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -99,12 +100,50 @@ class JavaScriptLanguage(LanguageSupport):
                 error_message="Syntax check timed out",
             )
 
+    # Patterns for LeetCode JS function signatures
+    _FUNC_PATTERNS = [
+        # var/let/const name = function(params) {
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"
+        ),
+        # function name(params) {
+        re.compile(
+            r"function\s+(\w+)\s*\(([^)]*)\)"
+        ),
+        # var/let/const name = (params) =>
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\)\s*=>"
+        ),
+        # var/let/const name = param =>  (single param arrow, no parens)
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"
+        ),
+    ]
+
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract method name — stub for Commit 2."""
+        """Extract the main function name from LeetCode JS solution.
+
+        Supports: var/let/const name = function(...), function name(...),
+        arrow functions with var/let/const.
+        """
+        for pattern in self._FUNC_PATTERNS:
+            match = pattern.search(code)
+            if match:
+                return match.group(1)
         return None
 
     def count_method_params(self, code: str) -> int:
-        """Count method params — stub for Commit 2."""
+        """Count parameters in the JS solution function."""
+        for pattern in self._FUNC_PATTERNS:
+            match = pattern.search(code)
+            if match:
+                params_str = match.group(2).strip()
+                if not params_str:
+                    return 0
+                # For single-param arrow (no parens), group(2) is the param name
+                if pattern == self._FUNC_PATTERNS[3]:
+                    return 1
+                return len([p.strip() for p in params_str.split(",") if p.strip()])
         return 0
 
     def run_test_case(
