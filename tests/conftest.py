@@ -82,6 +82,44 @@ class Solution:
 
 
 @pytest.fixture
+def valid_js_solution():
+    """Valid Two Sum solution in JavaScript."""
+    return """
+var twoSum = function(nums, target) {
+    const map = new Map();
+    for (let i = 0; i < nums.length; i++) {
+        const complement = target - nums[i];
+        if (map.has(complement)) {
+            return [map.get(complement), i];
+        }
+        map.set(nums[i], i);
+    }
+    return [];
+};
+"""
+
+
+@pytest.fixture
+def invalid_js_syntax():
+    """JavaScript code with syntax error."""
+    return """
+var twoSum = function(nums, target) {
+    return [
+};
+"""
+
+
+@pytest.fixture
+def wrong_js_solution():
+    """JavaScript solution that returns wrong results."""
+    return """
+var twoSum = function(nums, target) {
+    return [0, 0];
+};
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
