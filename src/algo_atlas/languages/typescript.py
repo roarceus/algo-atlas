@@ -1,5 +1,6 @@
 """TypeScript language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -123,12 +124,55 @@ class TypeScriptLanguage(LanguageSupport):
                 error_message="Syntax check timed out",
             )
 
+    # Patterns for LeetCode TypeScript function signatures.
+    # Same shapes as JavaScript; type annotations are captured inside
+    # the ([^)]*) group but don't affect matching.
+    _FUNC_PATTERNS = [
+        # var/let/const name = function(params) {
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"
+        ),
+        # function name(params) {
+        re.compile(
+            r"function\s+(\w+)\s*\(([^)]*)\)"
+        ),
+        # var/let/const name = (params) =>  (TS may have return type before =>)
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\).*?=>"
+        ),
+        # var/let/const name = param =>  (single param arrow, no parens)
+        re.compile(
+            r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"
+        ),
+    ]
+
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main function name — stub for Commit 2."""
+        """Extract the main function name from LeetCode TS solution.
+
+        Supports the same patterns as JavaScript: function declarations,
+        function expressions, and arrow functions with var/let/const.
+        """
+        for pattern in self._FUNC_PATTERNS:
+            match = pattern.search(code)
+            if match:
+                return match.group(1)
         return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters — stub for Commit 2."""
+        """Count parameters in the TS solution function.
+
+        Type annotations (e.g. nums: number[]) are included in each
+        comma-separated segment but don't affect the count.
+        """
+        for pattern in self._FUNC_PATTERNS:
+            match = pattern.search(code)
+            if match:
+                params_str = match.group(2).strip()
+                if not params_str:
+                    return 0
+                if pattern == self._FUNC_PATTERNS[3]:
+                    return 1
+                return len([p.strip() for p in params_str.split(",") if p.strip()])
         return 0
 
     def run_test_case(
