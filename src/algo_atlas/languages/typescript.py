@@ -1,14 +1,11 @@
 """TypeScript language support for AlgoAtlas."""
 
-import json
-import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
-from algo_atlas.config.settings import get_settings
 from algo_atlas.languages.base import (
     LanguageInfo,
     LanguageSupport,
