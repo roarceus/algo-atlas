@@ -2,6 +2,34 @@
 
 <!-- version list -->
 
+## v1.3.0 (2026-02-16)
+
+### Bug Fixes
+
+- Remove unused imports from typescript.py
+  ([`a124a14`](https://github.com/roarceus/algo-atlas/commit/a124a14346ef3b554b653c5219a09035fd535bdc))
+
+### Features
+
+- Add TypeScript language class with syntax checking
+  ([`ed12b19`](https://github.com/roarceus/algo-atlas/commit/ed12b1930ec38b66afa9dd529639085cbe78999d))
+
+- Add TypeScript method extraction and param counting Implement extract_method_name() and
+  count_method_params() using regex patterns matching LeetCode TS signatures: function declarations,
+  ([`d0e7594`](https://github.com/roarceus/algo-atlas/commit/d0e7594b81d7a2155bcefe5982d187c816589516))
+
+- Implement TypeScript test runner via tsx subprocess
+  ([`7e25bc1`](https://github.com/roarceus/algo-atlas/commit/7e25bc17dda5ba2aae6e40ae21c5163e47d03af1))
+
+### Testing
+
+- Add TypeScript language support tests Add 24 tests covering registry integration, metadata, syntax
+  checking, method extraction, param counting, and test execution for TypeScript. Add TS fixtures to
+  conftest.py and TS snippet to mock GraphQL response. Update registry and scraper test assertions.
+  Total test count: 241.
+  ([`f381273`](https://github.com/roarceus/algo-atlas/commit/f3812738680926f27bc831b9fd90c03b3db8412c))
+
+
 ## v1.2.0 (2026-02-13)
 
 ### Features
