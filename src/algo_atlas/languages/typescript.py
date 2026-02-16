@@ -1,5 +1,6 @@
 """TypeScript language support for AlgoAtlas."""
 
+import json
 import re
 import shutil
 import subprocess
@@ -7,6 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
+from algo_atlas.config.settings import get_settings
 from algo_atlas.languages.base import (
     LanguageInfo,
     LanguageSupport,
@@ -182,11 +184,147 @@ class TypeScriptLanguage(LanguageSupport):
         expected_output: Any,
         timeout: Optional[int] = None,
     ) -> TestResult:
-        """Run test case — stub for Commit 3."""
-        return TestResult(
-            passed=False,
-            input_args=input_args,
-            expected=expected_output,
-            actual=None,
-            error="TypeScript test execution not yet implemented",
+        """Run a single test case by writing a temp .ts file and running with tsx."""
+        if timeout is None:
+            settings = get_settings()
+            timeout = settings.verifier.execution_timeout
+
+        if not self.can_run_tests():
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="tsx not found. Install with: npm install -g tsx",
+            )
+
+        func_name = self.extract_method_name(code)
+        if func_name is None:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="Could not find solution function",
+            )
+
+        harness = self._build_test_harness(code, func_name, input_args)
+
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                suffix=".ts", mode="w", encoding="utf-8", delete=False,
+            ) as f:
+                f.write(harness)
+                tmp_path = f.name
+
+            result = subprocess.run(
+                [*self._tsx_cmd(), tmp_path],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+
+            Path(tmp_path).unlink(missing_ok=True)
+
+            # Try parsing JSON from stdout first (covers both success
+            # and caught runtime errors from the harness).
+            stdout = result.stdout.strip()
+            output = None
+            if stdout:
+                try:
+                    output = json.loads(stdout)
+                except json.JSONDecodeError:
+                    pass
+
+            # If we couldn't parse JSON and the process failed,
+            # fall back to raw stderr/stdout (e.g. compile errors).
+            if output is None:
+                if result.returncode != 0:
+                    error_msg = result.stderr.strip() or stdout
+                    return TestResult(
+                        passed=False,
+                        input_args=input_args,
+                        expected=expected_output,
+                        actual=None,
+                        error=error_msg or "tsx execution failed",
+                    )
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=f"Could not parse output: {stdout}",
+                )
+
+            if "error" in output:
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=output["error"],
+                )
+
+            from algo_atlas.core.verifier import _compare_results
+
+            actual = output["result"]
+            passed = _compare_results(expected_output, actual)
+
+            return TestResult(
+                passed=passed,
+                input_args=input_args,
+                expected=expected_output,
+                actual=actual,
+            )
+
+        except FileNotFoundError:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="tsx not found. Install with: npm install -g tsx",
+            )
+        except subprocess.TimeoutExpired:
+            if tmp_path:
+                Path(tmp_path).unlink(missing_ok=True)
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error=f"Execution timed out after {timeout}s",
+            )
+        except Exception as e:
+            if tmp_path:
+                Path(tmp_path).unlink(missing_ok=True)
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error=str(e),
+            )
+
+    @staticmethod
+    def _build_test_harness(
+        code: str, func_name: str, input_args: list[Any],
+    ) -> str:
+        """Build a TypeScript test harness script.
+
+        The harness includes the solution code, calls the function with
+        the given arguments, and prints a JSON object with the result.
+        """
+        js_args = ", ".join(json.dumps(arg) for arg in input_args)
+
+        return (
+            f"{code}\n\n"
+            f"try {{\n"
+            f"  const __result = {func_name}({js_args});\n"
+            f'  process.stdout.write(JSON.stringify({{ "result": __result }}));\n'
+            f"}} catch (__err: any) {{\n"
+            f'  process.stdout.write(JSON.stringify({{ "error": __err.message }}));\n'
+            f"  process.exit(1);\n"
+            f"}}\n"
         )
