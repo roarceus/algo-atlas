@@ -120,6 +120,44 @@ var twoSum = function(nums, target) {
 
 
 @pytest.fixture
+def valid_ts_solution():
+    """Valid Two Sum solution in TypeScript."""
+    return """
+function twoSum(nums: number[], target: number): number[] {
+    const map = new Map<number, number>();
+    for (let i = 0; i < nums.length; i++) {
+        const complement = target - nums[i];
+        if (map.has(complement)) {
+            return [map.get(complement)!, i];
+        }
+        map.set(nums[i], i);
+    }
+    return [];
+}
+"""
+
+
+@pytest.fixture
+def invalid_ts_syntax():
+    """TypeScript code with syntax error."""
+    return """
+function twoSum(nums: number[] {
+    return [];
+}
+"""
+
+
+@pytest.fixture
+def wrong_ts_solution():
+    """TypeScript solution that returns wrong results."""
+    return """
+function twoSum(nums: number[], target: number): number[] {
+    return [0, 0];
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -153,6 +191,11 @@ def mock_graphql_response():
                         "lang": "JavaScript",
                         "langSlug": "javascript",
                         "code": "/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nvar twoSum = function(nums, target) {\n    \n};",
+                    },
+                    {
+                        "lang": "TypeScript",
+                        "langSlug": "typescript",
+                        "code": "function twoSum(nums: number[], target: number): number[] {\n    \n};",
                     },
                 ],
                 "topicTags": [
