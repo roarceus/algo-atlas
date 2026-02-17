@@ -90,9 +90,11 @@ def _ensure_registered() -> None:
     from algo_atlas.languages.python import PythonLanguage
     from algo_atlas.languages.javascript import JavaScriptLanguage
     from algo_atlas.languages.typescript import TypeScriptLanguage
+    from algo_atlas.languages.java import JavaLanguage
     register(PythonLanguage())
     register(JavaScriptLanguage())
     register(TypeScriptLanguage())
+    register(JavaLanguage())
 
 
 __all__ = [
