@@ -2,6 +2,28 @@
 
 <!-- version list -->
 
+## v1.4.0 (2026-02-18)
+
+### Features
+
+- Add Java language class with javac syntax checking
+  ([`a4c0c69`](https://github.com/roarceus/algo-atlas/commit/a4c0c698cea0caf2b43d3314d155e80607b9e82c))
+
+- Add Java method extraction and param counting with constructor skipping
+  ([`fa47610`](https://github.com/roarceus/algo-atlas/commit/fa476105d3d54fd13398f6aeef3326a2fdcb406c))
+
+- Implement Java test runner with javac compile and java execute
+  ([`1be9fa9`](https://github.com/roarceus/algo-atlas/commit/1be9fa9ea32f96cc17717f1e3f3012ec4df8903a))
+
+### Testing
+
+- Add Java language support tests with fixtures and registry assertions
+  ([`4fc4aa7`](https://github.com/roarceus/algo-atlas/commit/4fc4aa7ad267e6cbd75d89c3e9bef8c6b8cf4748))
+
+- Fix test naming and data in test_java.py
+  ([`5281c77`](https://github.com/roarceus/algo-atlas/commit/5281c77e738171c27d95ead6a599a90dd3283173))
+
+
 ## v1.3.0 (2026-02-16)
 
 ### Bug Fixes
