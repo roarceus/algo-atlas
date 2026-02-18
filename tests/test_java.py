@@ -42,13 +42,13 @@ class TestJavaInfo:
     def test_is_language_support(self):
         assert isinstance(JavaLanguage(), LanguageSupport)
 
-    def test_can_run_tests_reflects_javac(self):
+    def test_can_run_tests_reflects_jdk(self):
         lang = JavaLanguage()
-        has_java = (
+        has_jdk = (
             shutil.which("javac") is not None
             and shutil.which("java") is not None
         )
-        assert lang.can_run_tests() is has_java
+        assert lang.can_run_tests() is has_jdk
 
 
 class TestJavaCheckSyntax:
@@ -71,7 +71,7 @@ class TestJavaCheckSyntax:
         result = lang.check_syntax("")
         assert result.valid is True
 
-    def test_javac_not_found(self):
+    def test_jdk_not_found(self):
         lang = JavaLanguage()
         with patch("shutil.which", return_value=None):
             result = lang.check_syntax("class Solution {}")
@@ -94,13 +94,13 @@ class TestJavaExtractMethodName:
 
     def test_generic_return_type(self):
         lang = JavaLanguage()
-        code = "class Solution { public List<Integer> solve(int[] arr) { return null; } }"
+        code = "class Solution { public List<Integer> solve(int n) { return null; } }"
         assert lang.extract_method_name(code) == "solve"
 
     def test_skips_constructor(self):
         lang = JavaLanguage()
-        code = "class Solution { public Solution() {} public int answer() { return 42; } }"
-        assert lang.extract_method_name(code) == "answer"
+        code = "class Solution { public Solution() {} public int[] twoSum(int[] nums, int t) { return null; } }"
+        assert lang.extract_method_name(code) == "twoSum"
 
     def test_no_method(self):
         lang = JavaLanguage()
@@ -170,7 +170,7 @@ class TestJavaRunTestCase:
         assert result.passed is False
         assert result.error is not None
 
-    def test_javac_not_found(self, valid_java_solution):
+    def test_jdk_not_found(self, valid_java_solution):
         lang = JavaLanguage()
         with patch("shutil.which", return_value=None):
             result = lang.run_test_case(
