@@ -158,11 +158,12 @@ class TestScrapeProblem:
 
         result = scrape_problem("https://leetcode.com/problems/two-sum/")
         assert result is not None
-        assert len(result.code_snippets_raw) == 3
+        assert len(result.code_snippets_raw) == 4
         slugs = [s["langSlug"] for s in result.code_snippets_raw]
         assert "python3" in slugs
         assert "javascript" in slugs
         assert "typescript" in slugs
+        assert "java" in slugs
 
     @patch("algo_atlas.core.scraper._make_request")
     def test_scrape_with_language(self, mock_request, mock_graphql_response):

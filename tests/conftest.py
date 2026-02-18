@@ -158,6 +158,49 @@ function twoSum(nums: number[], target: number): number[] {
 
 
 @pytest.fixture
+def valid_java_solution():
+    """Valid Two Sum solution in Java."""
+    return """
+import java.util.*;
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer,Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int comp = target - nums[i];
+            if (map.containsKey(comp)) return new int[]{map.get(comp), i};
+            map.put(nums[i], i);
+        }
+        return new int[]{};
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_java_syntax():
+    """Java code with syntax error."""
+    return """
+class Solution {
+    public int[] twoSum(int[] nums, int target)
+        return new int[]{0, 1};
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_java_solution():
+    """Java solution that returns wrong results."""
+    return """
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        return new int[]{0, 0};
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -196,6 +239,11 @@ def mock_graphql_response():
                         "lang": "TypeScript",
                         "langSlug": "typescript",
                         "code": "function twoSum(nums: number[], target: number): number[] {\n    \n};",
+                    },
+                    {
+                        "lang": "Java",
+                        "langSlug": "java",
+                        "code": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [
