@@ -42,11 +42,12 @@ class TestRegistry:
     def test_list_languages(self):
         """Test listing all registered languages."""
         langs = list_languages()
-        assert len(langs) >= 3
+        assert len(langs) >= 4
         slugs = [info.slug for info in langs]
         assert "python3" in slugs
         assert "javascript" in slugs
         assert "typescript" in slugs
+        assert "java" in slugs
 
     def test_default_language(self):
         """Test default language is Python."""
