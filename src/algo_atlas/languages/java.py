@@ -1,5 +1,6 @@
 """Java language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -106,12 +107,52 @@ class JavaLanguage(LanguageSupport):
                 import shutil as sh
                 sh.rmtree(tmp_dir, ignore_errors=True)
 
+    # Pattern for LeetCode Java method signatures inside class Solution.
+    # Matches: public <returnType> methodName(<params>)
+    # Return type can be multi-word like "int[]", "List<Integer>", etc.
+    _METHOD_PATTERN = re.compile(
+        r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)"
+    )
+
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main method name — stub for Commit 2."""
+        """Extract the main method name from LeetCode Java solution.
+
+        Looks for the first public non-constructor method inside the
+        Solution class, matching `public <type> methodName(...)`.
+        """
+        match = self._METHOD_PATTERN.search(code)
+        if match:
+            name = match.group(1)
+            # Skip constructors (method name == "Solution")
+            if name == "Solution":
+                # Try to find the next match
+                for m in self._METHOD_PATTERN.finditer(code):
+                    if m.group(1) != "Solution":
+                        return m.group(1)
+                return None
+            return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters — stub for Commit 2."""
+        """Count parameters in the Java solution method.
+
+        Each parameter is `type name` separated by commas.
+        """
+        match = self._METHOD_PATTERN.search(code)
+        if match:
+            name = match.group(1)
+            params_str = match.group(2).strip()
+            # Skip constructors
+            if name == "Solution":
+                for m in self._METHOD_PATTERN.finditer(code):
+                    if m.group(1) != "Solution":
+                        params_str = m.group(2).strip()
+                        break
+                else:
+                    return 0
+            if not params_str:
+                return 0
+            return len([p.strip() for p in params_str.split(",") if p.strip()])
         return 0
 
     def run_test_case(
