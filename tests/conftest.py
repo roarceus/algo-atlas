@@ -201,6 +201,48 @@ class Solution {
 
 
 @pytest.fixture
+def valid_cpp_solution():
+    """Valid Two Sum solution in C++."""
+    return """class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> seen;
+        for (int i = 0; i < (int)nums.size(); i++) {
+            int comp = target - nums[i];
+            if (seen.count(comp)) return {seen[comp], i};
+            seen[nums[i]] = i;
+        }
+        return {};
+    }
+};
+"""
+
+
+@pytest.fixture
+def invalid_cpp_syntax():
+    """C++ code with syntax error."""
+    return """class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        return {0, 1}
+    }
+};
+"""
+
+
+@pytest.fixture
+def wrong_cpp_solution():
+    """C++ solution that returns wrong results."""
+    return """class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        return {0, 0};
+    }
+};
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -244,6 +286,11 @@ def mock_graphql_response():
                         "lang": "Java",
                         "langSlug": "java",
                         "code": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}",
+                    },
+                    {
+                        "lang": "C++",
+                        "langSlug": "cpp",
+                        "code": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        \n    }\n};",
                     },
                 ],
                 "topicTags": [
