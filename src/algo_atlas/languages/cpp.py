@@ -1,12 +1,15 @@
 """C++ language support for AlgoAtlas."""
 
+import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
+from algo_atlas.config.settings import get_settings
 from algo_atlas.languages.base import (
     LanguageInfo,
     LanguageSupport,
@@ -32,6 +35,35 @@ _CPP_PREAMBLE = """\
 using namespace std;
 """
 
+
+# Overloaded toJson helpers for manual JSON serialisation in the test harness.
+# Uses C++ function overloading so toJson(sol.method(...)) resolves at compile time.
+# The template handles vector<T> and vector<vector<T>> recursively.
+_CPP_TO_JSON = r"""
+string toJson(bool val) { return val ? "true" : "false"; }
+string toJson(int val) { return to_string(val); }
+string toJson(long long val) { return to_string(val); }
+string toJson(double val) { return to_string(val); }
+string toJson(float val) { return to_string(val); }
+string toJson(const string& val) {
+    string r = "\"";
+    for (char c : val) {
+        if (c == '"') r += "\\\"";
+        else if (c == '\\') r += "\\\\";
+        else r += c;
+    }
+    return r + "\"";
+}
+template<typename T>
+string toJson(const vector<T>& val) {
+    string r = "[";
+    for (size_t i = 0; i < val.size(); i++) {
+        if (i) r += ",";
+        r += toJson(val[i]);
+    }
+    return r + "]";
+}
+"""
 
 # C++ keywords that may appear as `keyword(...)` — not method names
 _CPP_KEYWORDS = frozenset({"if", "for", "while", "switch", "catch", "return"})
@@ -143,8 +175,7 @@ class CppLanguage(LanguageSupport):
             )
         finally:
             if tmp_dir:
-                import shutil as sh
-                sh.rmtree(tmp_dir, ignore_errors=True)
+                shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def extract_method_name(self, code: str) -> Optional[str]:
         """Extract the main method name from a LeetCode C++ solution.
@@ -194,5 +225,161 @@ class CppLanguage(LanguageSupport):
         expected_output: Any,
         timeout: Optional[int] = None,
     ) -> TestResult:
-        """Run a single test case by compiling and running via g++."""
-        raise NotImplementedError
+        """Run a single test case by compiling and executing via g++.
+
+        Builds a single .cpp file (preamble + user code + toJson helpers + main),
+        compiles with g++ -std=c++17, runs the binary, and parses JSON from stdout.
+        """
+        if timeout is None:
+            timeout = get_settings().execution_timeout
+
+        method_name = self.extract_method_name(code)
+        if not method_name:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="Could not extract method name from C++ solution",
+            )
+
+        tmp_dir = None
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            src_path = Path(tmp_dir) / "solution.cpp"
+            src_path.write_text(
+                self._build_test_harness(code, method_name, input_args),
+                encoding="utf-8",
+            )
+
+            bin_name = "solution.exe" if sys.platform == "win32" else "solution"
+            bin_path = Path(tmp_dir) / bin_name
+
+            compile_result = subprocess.run(
+                ["g++", "-std=c++17", "-O0", "-o", str(bin_path), str(src_path)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if compile_result.returncode != 0:
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=f"Compilation error: {compile_result.stderr.strip()}",
+                )
+
+            run_result = subprocess.run(
+                [str(bin_path)],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+
+            stdout = run_result.stdout.strip()
+            try:
+                data = json.loads(stdout)
+            except (json.JSONDecodeError, ValueError):
+                detail = run_result.stderr.strip() or stdout or "No output"
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=f"Runtime error: {detail}",
+                )
+
+            if "error" in data:
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=data["error"],
+                )
+
+            actual = data.get("result")
+            return TestResult(
+                passed=actual == expected_output,
+                input_args=input_args,
+                expected=expected_output,
+                actual=actual,
+            )
+
+        except FileNotFoundError:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="g++ not found. Install GCC from https://gcc.gnu.org/",
+            )
+        except subprocess.TimeoutExpired:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="Execution timed out",
+            )
+        finally:
+            if tmp_dir:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    def _build_test_harness(
+        self, code: str, method_name: str, input_args: list[Any]
+    ) -> str:
+        """Build a complete .cpp file: preamble + solution + toJson + main."""
+        args_str = ", ".join(self._python_to_cpp_literal(a) for a in input_args)
+        main_fn = (
+            "int main() {\n"
+            "    Solution sol;\n"
+            "    try {\n"
+            f"        auto result = sol.{method_name}({args_str});\n"
+            '        cout << "{\\"result\\":" << toJson(result) << "}" << endl;\n'
+            "    } catch (const exception& e) {\n"
+            '        cout << "{\\"error\\":\\"" << e.what() << "\\"}" << endl;\n'
+            "        return 1;\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n"
+        )
+        return _CPP_PREAMBLE + code + "\n" + _CPP_TO_JSON + "\n" + main_fn
+
+    @staticmethod
+    def _python_to_cpp_literal(value: Any) -> str:
+        """Convert a Python value to its C++ literal representation."""
+        if value is None:
+            return "nullptr"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        if isinstance(value, int):
+            return str(value)
+        if isinstance(value, float):
+            return repr(value)
+        if isinstance(value, str):
+            escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+            return f'string("{escaped}")'
+        if isinstance(value, list):
+            if not value:
+                return "vector<int>{}"
+            if all(isinstance(x, bool) for x in value):
+                inner = ", ".join("true" if x else "false" for x in value)
+                return f"vector<bool>{{{inner}}}"
+            if all(isinstance(x, int) for x in value):
+                inner = ", ".join(str(x) for x in value)
+                return f"vector<int>{{{inner}}}"
+            if all(isinstance(x, str) for x in value):
+                inner = ", ".join(
+                    f'string("{x.replace(chr(92), chr(92)*2).replace(chr(34), chr(92)+chr(34))}")'
+                    for x in value
+                )
+                return f"vector<string>{{{inner}}}"
+            if all(isinstance(x, list) for x in value):
+                rows = ", ".join(
+                    "vector<int>{" + ", ".join(str(i) for i in row) + "}"
+                    for row in value
+                )
+                return f"vector<vector<int>>{{{rows}}}"
+        return str(value)
