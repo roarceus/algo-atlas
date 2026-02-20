@@ -1,5 +1,6 @@
 """C++ language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -30,6 +31,25 @@ _CPP_PREAMBLE = """\
 #include <sstream>
 using namespace std;
 """
+
+
+# C++ keywords that may appear as `keyword(...)` — not method names
+_CPP_KEYWORDS = frozenset({"if", "for", "while", "switch", "catch", "return"})
+
+# Matches a method definition inside class Solution (must be indented).
+# Captures: group(1) = method name, group(2) = raw params string.
+# Return type may include spaces (e.g. "long long"), templates (e.g. "vector<int>"),
+# pointers ("ListNode*") — handled by the non-greedy [\w<>\[\]*&,:\s]+? match.
+# Requiring [^{]*\{ at the end filters out plain function calls.
+_METHOD_PATTERN = re.compile(
+    r"^[ \t]+"                     # indented line
+    r"(?!//)"                      # not a comment
+    r"(?:[\w<>\[\]*&,:\s]+?)\s+"   # return type (non-greedy, handles long long)
+    r"(\w+)\s*"                    # method name
+    r"\(([^)]*)\)"                 # params
+    r"[^{]*\{",                    # up to opening brace (method definition)
+    re.MULTILINE,
+)
 
 
 class CppLanguage(LanguageSupport):
@@ -127,12 +147,45 @@ class CppLanguage(LanguageSupport):
                 sh.rmtree(tmp_dir, ignore_errors=True)
 
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main method name from a LeetCode C++ solution."""
-        raise NotImplementedError
+        """Extract the main method name from a LeetCode C++ solution.
+
+        Looks for the first indented method definition inside class Solution
+        that is not a constructor or a C++ control-flow keyword.
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name != "Solution" and name not in _CPP_KEYWORDS:
+                return name
+        return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters in the C++ solution method."""
-        raise NotImplementedError
+        """Count parameters in the C++ solution method.
+
+        Handles template types with commas (e.g. unordered_map<string, int>)
+        by only counting commas at angle-bracket depth 0.
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name != "Solution" and name not in _CPP_KEYWORDS:
+                params_str = m.group(2).strip()
+                return self._count_cpp_params(params_str)
+        return 0
+
+    @staticmethod
+    def _count_cpp_params(params_str: str) -> int:
+        """Count C++ params, respecting template angle-bracket nesting."""
+        if not params_str:
+            return 0
+        depth = 0
+        count = 1
+        for ch in params_str:
+            if ch == "<":
+                depth += 1
+            elif ch == ">":
+                depth -= 1
+            elif ch == "," and depth == 0:
+                count += 1
+        return count
 
     def run_test_case(
         self,
