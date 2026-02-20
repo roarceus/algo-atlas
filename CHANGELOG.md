@@ -2,6 +2,33 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-02-20)
+
+### Bug Fixes
+
+- **cpp**: Add iostream include and use named arg vars to fix ref binding
+  ([`205cb6a`](https://github.com/roarceus/algo-atlas/commit/205cb6add7fb309cc1bfed24724a2a7341daf3a5))
+
+- **cpp**: Use verifier.execution_timeout from settings
+  ([`1a9307d`](https://github.com/roarceus/algo-atlas/commit/1a9307d5d52e3bbedb4d9a8ede54d790c51dd2d5))
+
+### Features
+
+- **cpp**: Add CppLanguage class with g++ syntax checker
+  ([`6e32e73`](https://github.com/roarceus/algo-atlas/commit/6e32e736d078288142697d819cc332e3e182c168))
+
+- **cpp**: Implement extract_method_name and count_method_params
+  ([`fcbce50`](https://github.com/roarceus/algo-atlas/commit/fcbce5040cf4ee3046530fd66b7b933f62f2c6b0))
+
+- **cpp**: Implement run_test_case with g++ compile-and-run harness
+  ([`54d0aa1`](https://github.com/roarceus/algo-atlas/commit/54d0aa1916d58fe3ecae5258a9fd025cb96c2fe1))
+
+### Testing
+
+- **cpp**: Add CppLanguage tests and update shared fixtures
+  ([`aca3052`](https://github.com/roarceus/algo-atlas/commit/aca30521d94f60ab7a22be44296648f36dce593a))
+
+
 ## v1.4.0 (2026-02-18)
 
 ### Features
