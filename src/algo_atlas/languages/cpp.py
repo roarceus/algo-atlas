@@ -231,7 +231,7 @@ class CppLanguage(LanguageSupport):
         compiles with g++ -std=c++17, runs the binary, and parses JSON from stdout.
         """
         if timeout is None:
-            timeout = get_settings().execution_timeout
+            timeout = get_settings().verifier.execution_timeout
 
         method_name = self.extract_method_name(code)
         if not method_name:
