@@ -19,6 +19,7 @@ from algo_atlas.languages.base import (
 
 # Common LeetCode C++ includes
 _CPP_PREAMBLE = """\
+#include <iostream>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -330,12 +331,21 @@ class CppLanguage(LanguageSupport):
     def _build_test_harness(
         self, code: str, method_name: str, input_args: list[Any]
     ) -> str:
-        """Build a complete .cpp file: preamble + solution + toJson + main."""
-        args_str = ", ".join(self._python_to_cpp_literal(a) for a in input_args)
+        """Build a complete .cpp file: preamble + solution + toJson + main.
+
+        Each argument is declared as a named variable so that non-const lvalue
+        references (e.g. vector<int>&) can bind to them without error.
+        """
+        arg_decls = "".join(
+            f"        auto arg{i} = {self._python_to_cpp_literal(v)};\n"
+            for i, v in enumerate(input_args)
+        )
+        args_str = ", ".join(f"arg{i}" for i in range(len(input_args)))
         main_fn = (
             "int main() {\n"
             "    Solution sol;\n"
             "    try {\n"
+            f"{arg_decls}"
             f"        auto result = sol.{method_name}({args_str});\n"
             '        cout << "{\\"result\\":" << toJson(result) << "}" << endl;\n'
             "    } catch (const exception& e) {\n"
