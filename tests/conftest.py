@@ -201,6 +201,39 @@ class Solution {
 
 
 @pytest.fixture
+def valid_c_solution():
+    """Valid climbStairs solution in C."""
+    return """int climbStairs(int n) {
+    if (n <= 2) return n;
+    int a = 1, b = 2;
+    for (int i = 3; i <= n; i++) {
+        int c = a + b;
+        a = b;
+        b = c;
+    }
+    return b;
+}
+"""
+
+
+@pytest.fixture
+def invalid_c_syntax():
+    """C code with syntax error."""
+    return """int climbStairs(int n) {
+    return n
+"""
+
+
+@pytest.fixture
+def wrong_c_solution():
+    """C solution that returns wrong results."""
+    return """int climbStairs(int n) {
+    return 0;
+}
+"""
+
+
+@pytest.fixture
 def valid_cpp_solution():
     """Valid Two Sum solution in C++."""
     return """class Solution {
@@ -291,6 +324,11 @@ def mock_graphql_response():
                         "lang": "C++",
                         "langSlug": "cpp",
                         "code": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        \n    }\n};",
+                    },
+                    {
+                        "lang": "C",
+                        "langSlug": "c",
+                        "code": "int* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    \n}",
                     },
                 ],
                 "topicTags": [

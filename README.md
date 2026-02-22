@@ -1,7 +1,7 @@
 # AlgoAtlas
 
 [![CI](https://github.com/roarceus/algo-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/roarceus/algo-atlas/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/roarceus/algo-atlas/actions/workflows/code-quality.yml/badge.svg)](https://github.com/roarceus/algo-atlas/actions/workflows/code-quality.yml)
+[![Code Quality](https://github.com/roarceus/algo-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/roarceus/algo-atlas/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -56,7 +56,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 | Rich Progress Bars | Spinners and progress bars for long operations | Done |
 | GitHub Actions for Vault | Auto-generate stats, TOC on push to vault repo | Done |
 | Release Automation | Auto-version, changelog, and GitHub Release via semantic-release | Done |
-| Multi-language Support | Support solutions in Java, C++, JavaScript, etc. | Todo |
+| Multi-language Support | Support solutions in Java, C++, JavaScript, etc. | Done |
 | Interactive Search | Arrow-key navigation for search results | Todo |
 | Solution Comparison | Side-by-side comparison of alternative solutions | Todo |
 | Vault Analytics | Charts and stats dashboard for solved problems | Todo |
