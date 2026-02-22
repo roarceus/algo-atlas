@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v1.6.0 (2026-02-22)
+
+### Bug Fixes
+
+- **test**: Update code_snippets_raw count to 6 after adding C snippet
+  ([`a3a1013`](https://github.com/roarceus/algo-atlas/commit/a3a1013095cf613b9257ec70e1454cd78be86d5c))
+
+### Continuous Integration
+
+- Gate release on CI workflow passing lint and test
+  ([`09186e3`](https://github.com/roarceus/algo-atlas/commit/09186e3df2d8e16ef54306292c28fd13fbd3f20c))
+
+### Features
+
+- **c**: Add CLanguage class with gcc syntax checker
+  ([`4c76a7b`](https://github.com/roarceus/algo-atlas/commit/4c76a7b68e58464bffece314db22bef120ecf12b))
+
+- **c**: Implement extract_method_name and count_method_params
+  ([`527b5d7`](https://github.com/roarceus/algo-atlas/commit/527b5d7447482f89d804691da8a098adb3c8d1e9))
+
+- **c**: Implement run_test_case with gcc compile-and-run harness
+  ([`75d1d2e`](https://github.com/roarceus/algo-atlas/commit/75d1d2e416550d6069e82c9778c06c02867c66c6))
+
+### Testing
+
+- **c**: Add 24 tests for CLanguage across 6 classes
+  ([`ef540ea`](https://github.com/roarceus/algo-atlas/commit/ef540eaa56be406f54c0b4e4e3b97754135feab3))
+
+
 ## v1.5.0 (2026-02-20)
 
 ### Bug Fixes
