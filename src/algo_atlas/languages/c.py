@@ -1,5 +1,6 @@
 """C language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -11,6 +12,30 @@ from algo_atlas.languages.base import (
     LanguageSupport,
     SyntaxResult,
     TestResult,
+)
+
+# C keywords and type names that must not be mistaken for a function name
+_C_KEYWORDS = frozenset({
+    "if", "else", "for", "while", "do", "switch", "case", "break",
+    "continue", "return", "goto", "sizeof", "typedef", "struct", "union",
+    "enum", "const", "static", "extern", "volatile", "register",
+    "int", "long", "short", "char", "float", "double", "void", "bool",
+    "unsigned", "signed", "main",
+})
+
+# Matches a top-level C function definition (line must start with a word char,
+# not a preprocessor directive).
+# Return type may be multi-word (e.g. "long long") or include a pointer
+# (e.g. "int*", "struct ListNode*") — the non-greedy [\w\s*]*? handles all cases.
+# group(1) = function name, group(2) = raw params string.
+# Requiring [^;{]*\{ at the end excludes forward declarations (which end with ;).
+_FUNC_PATTERN = re.compile(
+    r"^(?!#)"                  # line start, not a preprocessor directive
+    r"(?:[\w*][\w\s*]*?\s)"    # return type (non-greedy, ends with a space)
+    r"(\w+)\s*"                # function name
+    r"\(([^)]*)\)"             # params
+    r"[^;{]*\{",               # up to opening brace (definition, not prototype)
+    re.MULTILINE,
 )
 
 # Common LeetCode C includes
@@ -118,12 +143,31 @@ class CLanguage(LanguageSupport):
                 shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main function name from a LeetCode C solution."""
-        raise NotImplementedError
+        """Extract the main function name from a LeetCode C solution.
+
+        Looks for the first top-level function definition whose name is
+        not a C keyword or type name (e.g. not 'main', 'int', 'long').
+        """
+        for m in _FUNC_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _C_KEYWORDS:
+                return name
+        return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters in the C solution function."""
-        raise NotImplementedError
+        """Count parameters in the C solution function.
+
+        C has no template types with commas, so a plain comma split is correct.
+        Treats 'void' as zero params (e.g. 'int answer(void)').
+        """
+        for m in _FUNC_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _C_KEYWORDS:
+                params_str = m.group(2).strip()
+                if not params_str or params_str == "void":
+                    return 0
+                return len([p for p in params_str.split(",") if p.strip()])
+        return 0
 
     def run_test_case(
         self,
