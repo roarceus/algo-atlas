@@ -49,6 +49,7 @@ class TestRegistry:
         assert "typescript" in slugs
         assert "java" in slugs
         assert "cpp" in slugs
+        assert "c" in slugs
 
     def test_default_language(self):
         """Test default language is Python."""
