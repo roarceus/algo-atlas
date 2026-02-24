@@ -234,6 +234,39 @@ def wrong_c_solution():
 
 
 @pytest.fixture
+def valid_go_solution():
+    """Valid climbStairs solution in Go."""
+    return """func climbStairs(n int) int {
+    if n <= 2 {
+        return n
+    }
+    a, b := 1, 2
+    for i := 3; i <= n; i++ {
+        a, b = b, a+b
+    }
+    return b
+}
+"""
+
+
+@pytest.fixture
+def invalid_go_syntax():
+    """Go code with syntax error."""
+    return """func climbStairs(n int) int {
+    return n
+"""
+
+
+@pytest.fixture
+def wrong_go_solution():
+    """Go solution that returns wrong results."""
+    return """func climbStairs(n int) int {
+    return 0
+}
+"""
+
+
+@pytest.fixture
 def valid_cpp_solution():
     """Valid Two Sum solution in C++."""
     return """class Solution {
@@ -329,6 +362,11 @@ def mock_graphql_response():
                         "lang": "C",
                         "langSlug": "c",
                         "code": "int* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    \n}",
+                    },
+                    {
+                        "lang": "Go",
+                        "langSlug": "golang",
+                        "code": "func twoSum(nums []int, target int) []int {\n    \n}",
                     },
                 ],
                 "topicTags": [
