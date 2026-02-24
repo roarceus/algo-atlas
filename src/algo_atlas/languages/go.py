@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Optional
@@ -183,8 +184,8 @@ class GoLanguage(LanguageSupport):
         """Run a single test case by compiling and executing via go run.
 
         Writes solution.go (package main + user code) and main.go (harness)
-        into a temp module directory, then runs 'go run .' and parses JSON
-        stdout.
+        into a temp module directory, compiles with 'go build', then runs
+        the binary and parses JSON stdout.
         """
         if timeout is None:
             timeout = get_settings().verifier.execution_timeout
@@ -212,12 +213,30 @@ class GoLanguage(LanguageSupport):
                 encoding="utf-8",
             )
 
+            bin_name = "solution.exe" if sys.platform == "win32" else "solution"
+            bin_path = tmp_path / bin_name
+
+            compile_result = subprocess.run(
+                ["go", "build", "-o", str(bin_path), "."],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=str(tmp_path),
+            )
+            if compile_result.returncode != 0:
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=f"Compilation error: {compile_result.stderr.strip()}",
+                )
+
             run_result = subprocess.run(
-                ["go", "run", "."],
+                [str(bin_path)],
                 capture_output=True,
                 text=True,
                 timeout=timeout,
-                cwd=str(tmp_path),
             )
 
             stdout = run_result.stdout.strip()
