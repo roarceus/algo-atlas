@@ -1,5 +1,6 @@
 """Go language support for AlgoAtlas."""
 
+import json
 import re
 import shutil
 import subprocess
@@ -7,6 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
+from algo_atlas.config.settings import get_settings
 from algo_atlas.languages.base import (
     LanguageInfo,
     LanguageSupport,
@@ -32,6 +34,17 @@ _FUNC_PATTERN = re.compile(
     r"^func\s+"       # 'func' keyword at line start
     r"(\w+)\s*"       # group(1) = function name
     r"\(([^)]*)\)",   # group(2) = raw params string
+    re.MULTILINE,
+)
+
+# Same as _FUNC_PATTERN but also captures the return type as group(3).
+# group(1) = function name, group(2) = params, group(3) = return type.
+# The return type is everything between the closing param paren and the '{'.
+_FUNC_FULL_PATTERN = re.compile(
+    r"^func\s+"
+    r"(\w+)\s*"           # group(1) = function name
+    r"\(([^)]*)\)"        # group(2) = params
+    r"\s*(.*?)\s*\{",     # group(3) = return type (may be empty for void)
     re.MULTILINE,
 )
 
@@ -167,11 +180,198 @@ class GoLanguage(LanguageSupport):
         expected_output: Any,
         timeout: Optional[int] = None,
     ) -> TestResult:
-        """Run a single test case against the Go solution."""
-        return TestResult(
-            passed=False,
-            input_args=input_args,
-            expected=expected_output,
-            actual=None,
-            error="Not implemented",
+        """Run a single test case by compiling and executing via go run.
+
+        Writes solution.go (package main + user code) and main.go (harness)
+        into a temp module directory, then runs 'go run .' and parses JSON
+        stdout.
+        """
+        if timeout is None:
+            timeout = get_settings().verifier.execution_timeout
+
+        method_name = self.extract_method_name(code)
+        if not method_name:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="Could not extract method name from Go solution",
+            )
+
+        tmp_dir = None
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            tmp_path = Path(tmp_dir)
+            (tmp_path / "go.mod").write_text(_GO_MOD, encoding="utf-8")
+            (tmp_path / "solution.go").write_text(
+                "package main\n\n" + code, encoding="utf-8"
+            )
+            (tmp_path / "main.go").write_text(
+                self._build_test_harness(code, method_name, input_args),
+                encoding="utf-8",
+            )
+
+            run_result = subprocess.run(
+                ["go", "run", "."],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=str(tmp_path),
+            )
+
+            stdout = run_result.stdout.strip()
+            try:
+                data = json.loads(stdout)
+            except (json.JSONDecodeError, ValueError):
+                detail = run_result.stderr.strip() or stdout or "No output"
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=f"Runtime error: {detail}",
+                )
+
+            if "error" in data:
+                return TestResult(
+                    passed=False,
+                    input_args=input_args,
+                    expected=expected_output,
+                    actual=None,
+                    error=data["error"],
+                )
+
+            actual = data.get("result")
+            return TestResult(
+                passed=actual == expected_output,
+                input_args=input_args,
+                expected=expected_output,
+                actual=actual,
+            )
+
+        except FileNotFoundError:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="go not found. Install Go from https://go.dev/",
+            )
+        except subprocess.TimeoutExpired:
+            return TestResult(
+                passed=False,
+                input_args=input_args,
+                expected=expected_output,
+                actual=None,
+                error="Execution timed out",
+            )
+        finally:
+            if tmp_dir:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    def _build_test_harness(
+        self, code: str, method_name: str, input_args: list[Any]
+    ) -> str:
+        """Build main.go: imports + func main that calls the solution.
+
+        The harness uses encoding/json to serialize any return type —
+        int, []int, string, bool, float64, [][]int, etc. — without needing
+        manual print helpers.
+        """
+        # Extract return type and param list from the function signature
+        return_type = "int"
+        params_str = ""
+        for m in _FUNC_FULL_PATTERN.finditer(code):
+            if m.group(1) == method_name:
+                params_str = m.group(2).strip()
+                return_type = m.group(3).strip()
+                break
+
+        go_params = self._parse_go_params(params_str)
+
+        # Declare variables for each parameter
+        decls = []
+        call_args = []
+        for i, param in enumerate(go_params):
+            if i >= len(input_args):
+                break
+            name = param["name"]
+            go_type = param["type"]
+            lit = self._python_to_go_literal(input_args[i], go_type)
+            decls.append(f"{name} := {lit}")
+            call_args.append(name)
+
+        args_str = ", ".join(call_args)
+        decl_code = "\n\t".join(decls) if decls else ""
+
+        is_void = not return_type
+        if is_void:
+            call_line = f"{method_name}({args_str})"
+            serialize = 'fmt.Printf("{\\\"result\\\":null}\\n")'
+        else:
+            call_line = f"result := {method_name}({args_str})"
+            serialize = (
+                "out, _ := json.Marshal(result)\n"
+                '\tfmt.Printf("{\\\"result\\\":%s}\\n", string(out))'
+            )
+
+        body = ""
+        if decl_code:
+            body += f"\t{decl_code}\n"
+        body += f"\t{call_line}\n"
+        body += f"\t{serialize}\n"
+
+        return (
+            "package main\n\n"
+            "import (\n"
+            '\t"encoding/json"\n'
+            '\t"fmt"\n'
+            ")\n\n"
+            "func main() {\n"
+            f"{body}"
+            "}\n"
         )
+
+    @staticmethod
+    def _parse_go_params(params_str: str) -> list[dict]:
+        """Parse a Go parameter list into [{name, type}] dicts.
+
+        Handles simple 'name type' pairs (e.g. 'nums []int, target int').
+        Params with only a name token (grouped form like 'a, b int') are
+        skipped for the first element — the typed element is still captured.
+        """
+        params = []
+        for p in params_str.split(","):
+            p = p.strip()
+            if not p:
+                continue
+            tokens = p.split()
+            if len(tokens) >= 2:
+                name = tokens[0]
+                go_type = " ".join(tokens[1:])
+                params.append({"name": name, "type": go_type})
+        return params
+
+    @staticmethod
+    def _python_to_go_literal(value: Any, go_type: str) -> str:
+        """Convert a Python value to a Go literal matching go_type."""
+        if go_type == "bool":
+            return "true" if value else "false"
+        if go_type in ("int", "int32", "int64"):
+            return str(int(value))
+        if go_type in ("float64", "float32"):
+            return repr(float(value))
+        if go_type == "string":
+            escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+            return f'"{escaped}"'
+        if go_type.startswith("[]"):
+            elem_type = go_type[2:]
+            if isinstance(value, list):
+                elements = ", ".join(
+                    GoLanguage._python_to_go_literal(v, elem_type) for v in value
+                )
+                return f"{go_type}{{{elements}}}"
+            return f"{go_type}{{}}"
+        # Fallback for unrecognised types (e.g. *TreeNode)
+        return str(value)
