@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v1.7.0 (2026-02-24)
+
+### Bug Fixes
+
+- **go**: Compile with go build before running to avoid execution timeout
+  ([`bba0fae`](https://github.com/roarceus/algo-atlas/commit/bba0fae8d5214f4e3bf2f762f6878a59794de7cf))
+
+### Features
+
+- **go**: Add GoLanguage with go build syntax checker and register
+  ([`1356bba`](https://github.com/roarceus/algo-atlas/commit/1356bbaf7d75f4dd25c8791550481e7e0687d22f))
+
+- **go**: Implement extract_method_name and count_method_params with regex
+  ([`843a1a2`](https://github.com/roarceus/algo-atlas/commit/843a1a2bfb83eac582ef419335ea19dcf541761c))
+
+- **go**: Implement run_test_case with go run harness and json.Marshal output
+  ([`b03fc81`](https://github.com/roarceus/algo-atlas/commit/b03fc817dd0cc0be782b497f5165c2eaf8efc7ae))
+
+### Testing
+
+- **go**: Add 24 tests for GoLanguage across 6 classes
+  ([`f67ed8e`](https://github.com/roarceus/algo-atlas/commit/f67ed8e436bb6cdd3f8968ffddd62216ccc07a49))
+
+
 ## v1.6.0 (2026-02-22)
 
 ### Bug Fixes
