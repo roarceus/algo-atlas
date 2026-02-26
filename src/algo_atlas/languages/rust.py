@@ -36,7 +36,7 @@ _METHOD_FULL_PATTERN = re.compile(
     r"\bpub\s+fn\s+"
     r"(\w+)\s*"              # group(1) = method name
     r"\(([^)]*)\)"           # group(2) = params
-    r"(?:\s*->\s*([^{]+?))?" # group(3) = return type (optional, before {)
+    r"(?:\s*->\s*([^{]+?))?"  # group(3) = return type (optional, before {)
     r"\s*\{",
     re.MULTILINE,
 )
