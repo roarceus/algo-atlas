@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v1.8.0 (2026-02-26)
+
+### Bug Fixes
+
+- **rust**: Add two spaces before inline comment to satisfy E261
+  ([`bd16db6`](https://github.com/roarceus/algo-atlas/commit/bd16db6186d3eb91a57c180f8d4469498326bc86))
+
+### Features
+
+- **rust**: Add RustLanguage with rustc syntax checker and register
+  ([`c01bf00`](https://github.com/roarceus/algo-atlas/commit/c01bf00157187bd0f4d83a4763480ca572307155))
+
+- **rust**: Implement extract_method_name and count_method_params with regex
+  ([`41d4ee9`](https://github.com/roarceus/algo-atlas/commit/41d4ee93385a521ad89d9d03cfba9425aded3819))
+
+- **rust**: Implement run_test_case with rustc compile-and-run harness
+  ([`c751b00`](https://github.com/roarceus/algo-atlas/commit/c751b00bdc07710162268a76b7f18cb9b9db084f))
+
+### Testing
+
+- **rust**: Add 24 tests for RustLanguage across 6 classes
+  ([`dc1c7d9`](https://github.com/roarceus/algo-atlas/commit/dc1c7d9ee75aca98a0351a36a6a7625711492585))
+
+
 ## v1.7.0 (2026-02-24)
 
 ### Bug Fixes
