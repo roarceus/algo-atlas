@@ -1,5 +1,6 @@
 """Rust language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -11,6 +12,19 @@ from algo_atlas.languages.base import (
     LanguageSupport,
     SyntaxResult,
     TestResult,
+)
+
+# Method names inside impl Solution that are not the LeetCode solution.
+_RUST_KEYWORDS = frozenset({"new", "default", "clone", "fmt", "from", "into"})
+
+# Matches a `pub fn` inside impl Solution.
+# group(1) = method name, group(2) = raw params string.
+# [^)]* works for LeetCode params because Rust generic types use <> not ().
+_METHOD_PATTERN = re.compile(
+    r"\bpub\s+fn\s+"
+    r"(\w+)\s*"       # group(1) = method name
+    r"\(([^)]*)\)",   # group(2) = raw params string
+    re.MULTILINE,
 )
 
 # Prepended to user code for syntax checking.
@@ -126,12 +140,64 @@ class RustLanguage(LanguageSupport):
                 shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main method name from a LeetCode Rust solution."""
+        """Extract the main method name from a LeetCode Rust solution.
+
+        Looks for the first `pub fn` whose name is not a common utility
+        method (new, clone, etc.).
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _RUST_KEYWORDS:
+                return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters in the Rust solution method."""
+        """Count parameters in the Rust solution method.
+
+        Splits the param list by top-level commas (ignoring commas inside
+        angle brackets, e.g. Vec<i32> or HashMap<i32, i32>), then excludes
+        &self / &mut self receiver params.
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _RUST_KEYWORDS:
+                params_str = m.group(2).strip()
+                if not params_str:
+                    return 0
+                parts = self._split_rust_params(params_str)
+                # Exclude &self / &mut self receiver
+                parts = [
+                    p for p in parts
+                    if not p.lstrip("&").strip().startswith("self")
+                    and not p.lstrip("&").strip().startswith("mut self")
+                ]
+                return len(parts)
         return 0
+
+    @staticmethod
+    def _split_rust_params(params_str: str) -> list[str]:
+        """Split a Rust param list by top-level commas only.
+
+        Commas inside angle brackets (e.g. HashMap<i32, i32>) are ignored.
+        """
+        params: list[str] = []
+        current: list[str] = []
+        depth = 0
+        for ch in params_str:
+            if ch == "<":
+                depth += 1
+                current.append(ch)
+            elif ch == ">":
+                depth -= 1
+                current.append(ch)
+            elif ch == "," and depth == 0:
+                params.append("".join(current).strip())
+                current = []
+            else:
+                current.append(ch)
+        if current:
+            params.append("".join(current).strip())
+        return [p for p in params if p]
 
     def run_test_case(
         self,
