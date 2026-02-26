@@ -267,6 +267,46 @@ def wrong_go_solution():
 
 
 @pytest.fixture
+def valid_rust_solution():
+    """Valid climbStairs solution in Rust."""
+    return """impl Solution {
+    pub fn climb_stairs(n: i32) -> i32 {
+        if n <= 2 {
+            return n;
+        }
+        let (mut a, mut b) = (1, 2);
+        for _ in 3..=n {
+            let c = a + b;
+            a = b;
+            b = c;
+        }
+        b
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_rust_syntax():
+    """Rust code with syntax error."""
+    return """impl Solution {
+    pub fn climb_stairs(n: i32) -> i32 {
+        return n
+"""
+
+
+@pytest.fixture
+def wrong_rust_solution():
+    """Rust solution that returns wrong results."""
+    return """impl Solution {
+    pub fn climb_stairs(n: i32) -> i32 {
+        0
+    }
+}
+"""
+
+
+@pytest.fixture
 def valid_cpp_solution():
     """Valid Two Sum solution in C++."""
     return """class Solution {
@@ -367,6 +407,11 @@ def mock_graphql_response():
                         "lang": "Go",
                         "langSlug": "golang",
                         "code": "func twoSum(nums []int, target int) []int {\n    \n}",
+                    },
+                    {
+                        "lang": "Rust",
+                        "langSlug": "rust",
+                        "code": "impl Solution {\n    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [
