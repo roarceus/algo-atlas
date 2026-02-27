@@ -95,6 +95,7 @@ def _ensure_registered() -> None:
     from algo_atlas.languages.c import CLanguage
     from algo_atlas.languages.go import GoLanguage
     from algo_atlas.languages.rust import RustLanguage
+    from algo_atlas.languages.csharp import CSharpLanguage
     register(PythonLanguage())
     register(JavaScriptLanguage())
     register(TypeScriptLanguage())
@@ -103,6 +104,7 @@ def _ensure_registered() -> None:
     register(CLanguage())
     register(GoLanguage())
     register(RustLanguage())
+    register(CSharpLanguage())
 
 
 __all__ = [
