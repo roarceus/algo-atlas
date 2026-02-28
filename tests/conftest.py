@@ -349,6 +349,48 @@ public:
 
 
 @pytest.fixture
+def valid_cs_solution():
+    """Valid Two Sum solution in C#."""
+    return """\
+class Solution {
+    public int[] TwoSum(int[] nums, int target) {
+        var map = new Dictionary<int, int>();
+        for (int i = 0; i < nums.Length; i++) {
+            int comp = target - nums[i];
+            if (map.ContainsKey(comp)) return new int[] { map[comp], i };
+            map[nums[i]] = i;
+        }
+        return new int[]{};
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_cs_syntax():
+    """C# code with syntax error."""
+    return """\
+class Solution {
+    public int[] TwoSum(int[] nums, int target)
+        return new int[]{0, 1};
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_cs_solution():
+    """C# solution that returns wrong results."""
+    return """\
+class Solution {
+    public int[] TwoSum(int[] nums, int target) {
+        return new int[]{0, 0};
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -412,6 +454,11 @@ def mock_graphql_response():
                         "lang": "Rust",
                         "langSlug": "rust",
                         "code": "impl Solution {\n    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {\n        \n    }\n}",
+                    },
+                    {
+                        "lang": "C#",
+                        "langSlug": "csharp",
+                        "code": "public class Solution {\n    public int[] TwoSum(int[] nums, int target) {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [
