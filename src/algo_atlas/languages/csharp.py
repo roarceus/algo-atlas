@@ -386,6 +386,7 @@ class CSharpLanguage(LanguageSupport):
         body += output_line + "\n"
 
         return (
+            "using System;\n"
             "using System.Text.Json;\n\n"
             "class Program {\n"
             "    static void Main() {\n"
