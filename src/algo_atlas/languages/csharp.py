@@ -1,5 +1,6 @@
 """C# language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -11,6 +12,14 @@ from algo_atlas.languages.base import (
     LanguageSupport,
     SyntaxResult,
     TestResult,
+)
+
+# Matches a public method inside class Solution.
+# group(1) = method name, group(2) = raw params string.
+# \S+ matches the return type as a single non-whitespace token, which covers
+# int, bool, string, int[], IList<int>, IList<IList<int>>, etc.
+_METHOD_PATTERN = re.compile(
+    r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)"
 )
 
 # Common using directives prepended to user code.
@@ -133,12 +142,58 @@ class CSharpLanguage(LanguageSupport):
                 shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def extract_method_name(self, code: str) -> Optional[str]:
-        """Extract the main method name from a LeetCode C# solution."""
+        """Extract the main method name from a LeetCode C# solution.
+
+        Looks for the first public method whose name is not 'Solution'
+        (the constructor). Uses the same simple pattern as Java since C#
+        LeetCode return types never contain whitespace.
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name != "Solution":
+                return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        """Count parameters in the C# solution method."""
+        """Count parameters in the C# solution method.
+
+        Uses angle-bracket-aware comma splitting so generics like
+        Dictionary<string, int> count as one parameter.
+        """
+        for m in _METHOD_PATTERN.finditer(code):
+            if m.group(1) != "Solution":
+                params_str = m.group(2).strip()
+                if not params_str:
+                    return 0
+                parts = self._split_cs_params(params_str)
+                return len(parts)
         return 0
+
+    @staticmethod
+    def _split_cs_params(params_str: str) -> list[str]:
+        """Split a C# param list by top-level commas only.
+
+        Commas inside angle brackets (e.g. Dictionary<string, int>) are
+        ignored so they count as one parameter.
+        """
+        params: list[str] = []
+        current: list[str] = []
+        depth = 0
+        for ch in params_str:
+            if ch == "<":
+                depth += 1
+                current.append(ch)
+            elif ch == ">":
+                depth -= 1
+                current.append(ch)
+            elif ch == "," and depth == 0:
+                params.append("".join(current).strip())
+                current = []
+            else:
+                current.append(ch)
+        if current:
+            params.append("".join(current).strip())
+        return [p for p in params if p]
 
     def run_test_case(
         self,
