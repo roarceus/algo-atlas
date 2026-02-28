@@ -35,7 +35,7 @@ _CS_CSPROJ_EXE = """\
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>solution</AssemblyName>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -55,7 +55,7 @@ _CS_CSPROJ_LIB = """\
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>
