@@ -2,6 +2,41 @@
 
 <!-- version list -->
 
+## v1.9.0 (2026-02-28)
+
+### Bug Fixes
+
+- **csharp**: Add using System to Program.cs harness for Console access
+  ([`a71a8d3`](https://github.com/roarceus/algo-atlas/commit/a71a8d3cc86b9e66f9ca408e8839c0d9fd8f070f))
+
+- **csharp**: Target net8.0 to match available runtime on CI
+  ([`aa8a5a7`](https://github.com/roarceus/algo-atlas/commit/aa8a5a72ff20be13f62588e1a69a64a373e51094))
+
+### Documentation
+
+- Add supported languages table to README
+  ([`2122cc7`](https://github.com/roarceus/algo-atlas/commit/2122cc7835b6e8722d1dafdffb41515028e30f23))
+
+- Update prerequisites, vault structure, and language list in README
+  ([`7e6751e`](https://github.com/roarceus/algo-atlas/commit/7e6751e81feb4155f4b272130903ee9c806627d0))
+
+### Features
+
+- **csharp**: Add CSharpLanguage with dotnet build syntax checker and register
+  ([`e336136`](https://github.com/roarceus/algo-atlas/commit/e3361363bb3bf348eff6c1071f7946c4c253f71b))
+
+- **csharp**: Implement extract_method_name and count_method_params with regex
+  ([`3042a81`](https://github.com/roarceus/algo-atlas/commit/3042a81169066d0520b8c318fed2664f5fbbab47))
+
+- **csharp**: Implement run_test_case with dotnet compile-and-run harness
+  ([`1836cd6`](https://github.com/roarceus/algo-atlas/commit/1836cd60d845e693d8c8160e7df99df76e923b0b))
+
+### Testing
+
+- **csharp**: Add test suite, fixtures, and registry/scraper coverage
+  ([`1db3f24`](https://github.com/roarceus/algo-atlas/commit/1db3f241f9705da556be01ea88950c812e29c22e))
+
+
 ## v1.8.0 (2026-02-26)
 
 ### Bug Fixes
