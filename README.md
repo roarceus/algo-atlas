@@ -38,6 +38,22 @@ This separation keeps the tool code separate from your solutions, making the vau
 - **Batch Processing** - Process multiple problems from a file (`batch` command)
 - **LeetCode Format Parsing** - Handles `nums = [2,7,11,15], target = 9` format
 
+## Supported Languages
+
+| Language | Syntax Check | Test Execution | Requirement |
+|----------|-------------|----------------|-------------|
+| Python | ✅ | ✅ | Python 3.10+ (bundled) |
+| JavaScript | ✅ | ✅ | [Node.js](https://nodejs.org/) |
+| TypeScript | ✅ | ✅ | [Node.js](https://nodejs.org/) + `npx tsx` |
+| Java | ✅ | ✅ | [JDK](https://adoptium.net/) |
+| C++ | ✅ | ✅ | [g++](https://gcc.gnu.org/) |
+| C | ✅ | ✅ | [gcc](https://gcc.gnu.org/) |
+| Go | ✅ | ✅ | [Go](https://go.dev/) |
+| Rust | ✅ | ✅ | [rustc](https://www.rust-lang.org/tools/install) |
+| C# | ✅ | ✅ | [.NET SDK 8+](https://dotnet.microsoft.com/) |
+
+> Syntax checking and test execution require the respective runtime to be installed. AlgoAtlas degrades gracefully — if a runtime is not found, it reports a clear error instead of crashing.
+
 ## Implementation Status
 
 | Phase | Description | Status |
