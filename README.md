@@ -72,7 +72,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 | Rich Progress Bars | Spinners and progress bars for long operations | Done |
 | GitHub Actions for Vault | Auto-generate stats, TOC on push to vault repo | Done |
 | Release Automation | Auto-version, changelog, and GitHub Release via semantic-release | Done |
-| Multi-language Support | Support solutions in Java, C++, JavaScript, etc. | Done |
+| Multi-language Support | Python, JavaScript, TypeScript, Java, C++, C, Go, Rust, C# | Done |
 | Interactive Search | Arrow-key navigation for search results | Todo |
 | Solution Comparison | Side-by-side comparison of alternative solutions | Todo |
 | Vault Analytics | Charts and stats dashboard for solved problems | Todo |
@@ -86,6 +86,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 - Python 3.10 or higher
 - [Claude Code CLI](https://github.com/anthropics/claude-code) installed and configured
 - [GitHub CLI](https://cli.github.com/) (for PR creation features)
+- Language runtime for your solution's language (see [Supported Languages](#supported-languages)) — only needed for the languages you use
 
 ### Install from source
 
@@ -144,7 +145,7 @@ git push -u origin main
 algo-atlas-vault/
 ├── Easy/
 │   └── 1. Two Sum/
-│       ├── solution.py
+│       ├── solution.py    # or solution.js, solution.cs, solution.rs, etc.
 │       └── README.md
 ├── Medium/
 │   └── 2. Add Two Numbers/
