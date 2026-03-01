@@ -7,7 +7,10 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from algo_atlas.core.scraper import ProblemData
-from algo_atlas.utils.prompts import get_documentation_prompt, get_expected_outputs_prompt
+from algo_atlas.utils.prompts import (
+    get_documentation_prompt,
+    get_expected_outputs_prompt,
+)
 
 
 @dataclass
@@ -28,7 +31,9 @@ def check_claude_installed() -> bool:
     return shutil.which("claude") is not None
 
 
-def call_claude(prompt: str, max_tokens: int = 4096, timeout: int = 300) -> GenerationResult:
+def call_claude(
+    prompt: str, max_tokens: int = 4096, timeout: int = 300
+) -> GenerationResult:
     """Call Claude CLI with a prompt.
 
     Passes the prompt via stdin to avoid command-line length limits
@@ -167,10 +172,19 @@ def _clean_generated_content(content: str) -> str:
         # Check if there's preamble text before the heading
         preamble = "\n".join(lines[:first_heading_idx]).strip()
         # If preamble looks like conversational text, remove it
-        if any(phrase in preamble.lower() for phrase in [
-            "here's", "here is", "i've", "i have", "the readme",
-            "content for", "documentation for", "below is",
-        ]):
+        if any(
+            phrase in preamble.lower()
+            for phrase in [
+                "here's",
+                "here is",
+                "i've",
+                "i have",
+                "the readme",
+                "content for",
+                "documentation for",
+                "below is",
+            ]
+        ):
             content = "\n".join(lines[first_heading_idx:])
 
     return content.strip()

@@ -32,9 +32,9 @@ _GO_KEYWORDS = frozenset({"main", "init"})
 # Params are bounded by the first closing paren; Go types never use parens
 # inside a parameter list (slices use [], maps use []), so [^)]* is safe.
 _FUNC_PATTERN = re.compile(
-    r"^func\s+"       # 'func' keyword at line start
-    r"(\w+)\s*"       # group(1) = function name
-    r"\(([^)]*)\)",   # group(2) = raw params string
+    r"^func\s+"  # 'func' keyword at line start
+    r"(\w+)\s*"  # group(1) = function name
+    r"\(([^)]*)\)",  # group(2) = raw params string
     re.MULTILINE,
 )
 
@@ -43,9 +43,9 @@ _FUNC_PATTERN = re.compile(
 # The return type is everything between the closing param paren and the '{'.
 _FUNC_FULL_PATTERN = re.compile(
     r"^func\s+"
-    r"(\w+)\s*"           # group(1) = function name
-    r"\(([^)]*)\)"        # group(2) = params
-    r"\s*(.*?)\s*\{",     # group(3) = return type (may be empty for void)
+    r"(\w+)\s*"  # group(1) = function name
+    r"\(([^)]*)\)"  # group(2) = params
+    r"\s*(.*?)\s*\{",  # group(3) = return type (may be empty for void)
     re.MULTILINE,
 )
 
@@ -88,9 +88,7 @@ class GoLanguage(LanguageSupport):
             tmp_dir = tempfile.mkdtemp()
             tmp_path = Path(tmp_dir)
             (tmp_path / "go.mod").write_text(_GO_MOD, encoding="utf-8")
-            (tmp_path / "solution.go").write_text(
-                _GO_PACKAGE + code, encoding="utf-8"
-            )
+            (tmp_path / "solution.go").write_text(_GO_PACKAGE + code, encoding="utf-8")
 
             result = subprocess.run(
                 ["go", "build", "."],
@@ -119,11 +117,11 @@ class GoLanguage(LanguageSupport):
                             error_line = max(1, raw_line - preamble_lines)
                         except ValueError:
                             pass
-                        rest = parts[colon_idx + 1:].strip()
+                        rest = parts[colon_idx + 1 :].strip()
                         # skip column number
                         col_end = rest.find(":")
                         if col_end > 0:
-                            rest = rest[col_end + 1:].strip()
+                            rest = rest[col_end + 1 :].strip()
                         error_msg = rest
                     break
 
@@ -327,12 +325,12 @@ class GoLanguage(LanguageSupport):
         is_void = not return_type
         if is_void:
             call_line = f"{method_name}({args_str})"
-            serialize = 'fmt.Printf("{\\\"result\\\":null}\\n")'
+            serialize = 'fmt.Printf("{\\"result\\":null}\\n")'
         else:
             call_line = f"result := {method_name}({args_str})"
             serialize = (
                 "out, _ := json.Marshal(result)\n"
-                '\tfmt.Printf("{\\\"result\\\":%s}\\n", string(out))'
+                '\tfmt.Printf("{\\"result\\":%s}\\n", string(out))'
             )
 
         body = ""

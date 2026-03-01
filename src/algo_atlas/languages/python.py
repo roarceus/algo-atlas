@@ -48,7 +48,9 @@ class PythonLanguage(LanguageSupport):
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef) and node.name == "Solution":
                 for item in node.body:
-                    if isinstance(item, ast.FunctionDef) and not item.name.startswith("_"):
+                    if isinstance(item, ast.FunctionDef) and not item.name.startswith(
+                        "_"
+                    ):
                         return item.name
 
         return None
@@ -63,7 +65,9 @@ class PythonLanguage(LanguageSupport):
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef) and node.name == "Solution":
                 for item in node.body:
-                    if isinstance(item, ast.FunctionDef) and not item.name.startswith("_"):
+                    if isinstance(item, ast.FunctionDef) and not item.name.startswith(
+                        "_"
+                    ):
                         args = item.args
                         count = len(args.args)
                         if count > 0 and args.args[0].arg == "self":

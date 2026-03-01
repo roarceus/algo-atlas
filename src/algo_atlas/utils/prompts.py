@@ -174,7 +174,9 @@ def get_documentation_prompt(
         ex_output = ex.get("output", "N/A")
         ex_explanation = ex.get("explanation", "")
 
-        example_text = f"**Example {ex_num}:**\n- Input: {ex_input}\n- Output: {ex_output}"
+        example_text = (
+            f"**Example {ex_num}:**\n- Input: {ex_input}\n- Output: {ex_output}"
+        )
         if ex_explanation:
             example_text += f"\n- Explanation: {ex_explanation}"
         examples_parts.append(example_text)

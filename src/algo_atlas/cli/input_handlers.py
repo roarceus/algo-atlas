@@ -103,7 +103,9 @@ def get_solution_code(logger) -> Optional[str]:
 
     # Check if it's a file path (any known language extension or existing file)
     def _is_solution_file(text: str) -> bool:
-        return any(text.endswith(ext) for ext in _KNOWN_EXTENSIONS) or Path(text).exists()
+        return (
+            any(text.endswith(ext) for ext in _KNOWN_EXTENSIONS) or Path(text).exists()
+        )
 
     if _is_solution_file(first_line):
         path = Path(first_line)
@@ -151,7 +153,9 @@ def get_language_choice(logger, cli_language: Optional[str] = None) -> str:
     if cli_language is not None:
         lang = get_language(cli_language)
         if lang is None:
-            logger.warning(f"Unknown language '{cli_language}', falling back to default")
+            logger.warning(
+                f"Unknown language '{cli_language}', falling back to default"
+            )
         else:
             return cli_language
 

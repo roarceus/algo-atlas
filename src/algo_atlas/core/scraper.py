@@ -150,7 +150,7 @@ def _make_request(
         except requests.RequestException:
             if attempt < max_retries - 1:
                 # Exponential backoff
-                wait_time = retry_delay * (2 ** attempt)
+                wait_time = retry_delay * (2**attempt)
                 time.sleep(wait_time)
             continue
 
@@ -186,14 +186,18 @@ def _parse_html_content(html: str) -> tuple[str, list[dict], list[str]]:
 
         # Try to extract input/output
         input_match = re.search(r"Input:\s*(.+?)(?=Output:|$)", content, re.DOTALL)
-        output_match = re.search(r"Output:\s*(.+?)(?=Explanation:|$)", content, re.DOTALL)
+        output_match = re.search(
+            r"Output:\s*(.+?)(?=Explanation:|$)", content, re.DOTALL
+        )
         explanation_match = re.search(r"Explanation:\s*(.+?)$", content, re.DOTALL)
 
         example = {
             "number": int(num),
             "input": input_match.group(1).strip() if input_match else "",
             "output": output_match.group(1).strip() if output_match else "",
-            "explanation": explanation_match.group(1).strip() if explanation_match else "",
+            "explanation": (
+                explanation_match.group(1).strip() if explanation_match else ""
+            ),
         }
         examples.append(example)
 
@@ -227,7 +231,9 @@ def extract_test_cases(example_testcases: str) -> list[str]:
         return []
 
     # Split by newlines and filter empty lines
-    cases = [case.strip() for case in example_testcases.strip().split("\n") if case.strip()]
+    cases = [
+        case.strip() for case in example_testcases.strip().split("\n") if case.strip()
+    ]
     return cases
 
 

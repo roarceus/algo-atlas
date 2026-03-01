@@ -67,10 +67,7 @@ class TestValidateVaultRepo:
     def test_none_vault_no_config(self, tmp_path, monkeypatch):
         """Test validation with None path and no configured vault."""
         # Patch get_vault_path to return None (no configured vault)
-        monkeypatch.setattr(
-            "algo_atlas.utils.vault_files.get_vault_path",
-            lambda: None
-        )
+        monkeypatch.setattr("algo_atlas.utils.vault_files.get_vault_path", lambda: None)
         assert validate_vault_repo(None) is False
 
 
@@ -118,7 +115,9 @@ class TestCreateProblemFolder:
 
     def test_create_hard_folder(self, temp_vault):
         """Test creating folder in Hard directory."""
-        folder = create_problem_folder(temp_vault, 4, "Median of Two Sorted Arrays", "Hard")
+        folder = create_problem_folder(
+            temp_vault, 4, "Median of Two Sorted Arrays", "Hard"
+        )
         assert folder is not None
         assert folder.exists()
         assert folder.parent.name == "Hard"
@@ -468,10 +467,20 @@ class TestGenerateTopicIndexMarkdown:
         """Test generating topic index markdown."""
         topic_index = {
             "Array": [
-                {"number": 1, "title": "Two Sum", "difficulty": "Easy", "folder_name": "1. Two Sum"},
+                {
+                    "number": 1,
+                    "title": "Two Sum",
+                    "difficulty": "Easy",
+                    "folder_name": "1. Two Sum",
+                },
             ],
             "Hash Table": [
-                {"number": 1, "title": "Two Sum", "difficulty": "Easy", "folder_name": "1. Two Sum"},
+                {
+                    "number": 1,
+                    "title": "Two Sum",
+                    "difficulty": "Easy",
+                    "folder_name": "1. Two Sum",
+                },
             ],
         }
 
@@ -492,8 +501,22 @@ class TestGenerateTopicIndexMarkdown:
     def test_topics_sorted_alphabetically(self):
         """Test that topics are sorted alphabetically."""
         topic_index = {
-            "Zebra": [{"number": 1, "title": "Test", "difficulty": "Easy", "folder_name": "1. Test"}],
-            "Apple": [{"number": 2, "title": "Test2", "difficulty": "Easy", "folder_name": "2. Test2"}],
+            "Zebra": [
+                {
+                    "number": 1,
+                    "title": "Test",
+                    "difficulty": "Easy",
+                    "folder_name": "1. Test",
+                }
+            ],
+            "Apple": [
+                {
+                    "number": 2,
+                    "title": "Test2",
+                    "difficulty": "Easy",
+                    "folder_name": "2. Test2",
+                }
+            ],
         }
 
         result = generate_topic_index_markdown(topic_index)

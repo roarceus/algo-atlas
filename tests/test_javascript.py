@@ -12,6 +12,7 @@ from algo_atlas.languages.javascript import JavaScriptLanguage
 # Registry integration
 # ---------------------------------------------------------------------------
 
+
 class TestJavaScriptRegistry:
     """Tests for JavaScript in the language registry."""
 
@@ -33,6 +34,7 @@ class TestJavaScriptRegistry:
 # ---------------------------------------------------------------------------
 # LanguageInfo metadata
 # ---------------------------------------------------------------------------
+
 
 class TestJavaScriptInfo:
     """Tests for JavaScriptLanguage metadata."""
@@ -60,6 +62,7 @@ class TestJavaScriptInfo:
 # ---------------------------------------------------------------------------
 # check_syntax
 # ---------------------------------------------------------------------------
+
 
 class TestJavaScriptCheckSyntax:
     """Tests for JavaScriptLanguage.check_syntax()."""
@@ -93,6 +96,7 @@ class TestJavaScriptCheckSyntax:
 # extract_method_name
 # ---------------------------------------------------------------------------
 
+
 class TestJavaScriptExtractMethodName:
     """Tests for JavaScriptLanguage.extract_method_name()."""
 
@@ -125,6 +129,7 @@ class TestJavaScriptExtractMethodName:
 # count_method_params
 # ---------------------------------------------------------------------------
 
+
 class TestJavaScriptCountMethodParams:
     """Tests for JavaScriptLanguage.count_method_params()."""
 
@@ -151,6 +156,7 @@ class TestJavaScriptCountMethodParams:
 # ---------------------------------------------------------------------------
 # run_test_case
 # ---------------------------------------------------------------------------
+
 
 class TestJavaScriptRunTestCase:
     """Tests for JavaScriptLanguage.run_test_case()."""

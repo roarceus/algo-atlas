@@ -41,14 +41,16 @@ def get_all_problems(vault_path: Path) -> list[dict]:
             readme_path = folder / "README.md"
             topics = extract_topics_from_readme(readme_path)
 
-            problems.append({
-                "number": problem_num,
-                "title": problem_title,
-                "difficulty": difficulty,
-                "folder_name": folder.name,
-                "folder_path": folder,
-                "topics": topics,
-            })
+            problems.append(
+                {
+                    "number": problem_num,
+                    "title": problem_title,
+                    "difficulty": difficulty,
+                    "folder_name": folder.name,
+                    "folder_path": folder,
+                    "topics": topics,
+                }
+            )
 
     # Sort by problem number
     problems.sort(key=lambda p: p["number"])
@@ -68,10 +70,7 @@ def search_by_topic(vault_path: Path, topic: str) -> list[dict]:
     topic_lower = topic.lower()
     problems = get_all_problems(vault_path)
 
-    return [
-        p for p in problems
-        if any(topic_lower in t.lower() for t in p["topics"])
-    ]
+    return [p for p in problems if any(topic_lower in t.lower() for t in p["topics"])]
 
 
 def search_by_difficulty(vault_path: Path, difficulty: str) -> list[dict]:
@@ -105,10 +104,7 @@ def search_by_keyword(vault_path: Path, keyword: str) -> list[dict]:
     keyword_lower = keyword.lower()
     problems = get_all_problems(vault_path)
 
-    return [
-        p for p in problems
-        if keyword_lower in p["title"].lower()
-    ]
+    return [p for p in problems if keyword_lower in p["title"].lower()]
 
 
 def search_by_number(vault_path: Path, number: int) -> Optional[dict]:
@@ -158,8 +154,7 @@ def search_problems(
     if topic:
         topic_lower = topic.lower()
         problems = [
-            p for p in problems
-            if any(topic_lower in t.lower() for t in p["topics"])
+            p for p in problems if any(topic_lower in t.lower() for t in p["topics"])
         ]
 
     # Filter by query (title keyword or number)
@@ -170,10 +165,7 @@ def search_problems(
             problems = [p for p in problems if p["number"] == num]
         else:
             query_lower = query.lower()
-            problems = [
-                p for p in problems
-                if query_lower in p["title"].lower()
-            ]
+            problems = [p for p in problems if query_lower in p["title"].lower()]
 
     return problems
 

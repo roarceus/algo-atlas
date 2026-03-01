@@ -91,7 +91,9 @@ class TestRustExtractMethodName:
 
     def test_bool_return(self):
         lang = RustLanguage()
-        code = "impl Solution {\n    pub fn is_palindrome(s: String) -> bool { true }\n}"
+        code = (
+            "impl Solution {\n    pub fn is_palindrome(s: String) -> bool { true }\n}"
+        )
         assert lang.extract_method_name(code) == "is_palindrome"
 
     def test_skips_new(self):
@@ -163,7 +165,9 @@ class TestRustRunTestCase:
 
     def test_runtime_error(self):
         lang = RustLanguage()
-        code = "impl Solution {\n    pub fn boom(n: i32) -> i32 { panic!(\"kaboom\"); }\n}"
+        code = (
+            'impl Solution {\n    pub fn boom(n: i32) -> i32 { panic!("kaboom"); }\n}'
+        )
         result = lang.run_test_case(code=code, input_args=[1], expected_output=0)
         assert result.passed is False
         assert result.error is not None

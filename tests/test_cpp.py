@@ -81,7 +81,9 @@ class TestCppExtractMethodName:
 
     def test_int_return(self):
         lang = CppLanguage()
-        code = "class Solution {\npublic:\n    int add(int a, int b) { return a + b; }\n};"
+        code = (
+            "class Solution {\npublic:\n    int add(int a, int b) { return a + b; }\n};"
+        )
         assert lang.extract_method_name(code) == "add"
 
     def test_vector_return(self):
@@ -164,7 +166,7 @@ class TestCppRunTestCase:
 
     def test_runtime_error(self):
         lang = CppLanguage()
-        code = "class Solution {\npublic:\n    int boom() { throw runtime_error(\"kaboom\"); }\n};"
+        code = 'class Solution {\npublic:\n    int boom() { throw runtime_error("kaboom"); }\n};'
         result = lang.run_test_case(code=code, input_args=[], expected_output=None)
         assert result.passed is False
         assert result.error is not None

@@ -162,7 +162,7 @@ class TestGoRunTestCase:
 
     def test_runtime_error(self):
         lang = GoLanguage()
-        code = "func boom(n int) int { panic(\"kaboom\") }"
+        code = 'func boom(n int) int { panic("kaboom") }'
         result = lang.run_test_case(code=code, input_args=[1], expected_output=0)
         assert result.passed is False
         assert result.error is not None

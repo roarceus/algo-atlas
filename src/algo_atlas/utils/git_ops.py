@@ -196,7 +196,9 @@ def checkout_main(vault_path: Path) -> Tuple[bool, str]:
     """
     success, output = _run_git_command(vault_path, ["checkout", "main"], check=False)
     if not success:
-        success, output = _run_git_command(vault_path, ["checkout", "master"], check=False)
+        success, output = _run_git_command(
+            vault_path, ["checkout", "master"], check=False
+        )
 
     if success:
         return True, "Switched to main branch"

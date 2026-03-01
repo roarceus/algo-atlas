@@ -52,10 +52,18 @@ class TestParseArgs:
 
     def test_batch_with_flags(self):
         """Test batch command with all flags."""
-        with patch.object(sys, "argv", [
-            "algo-atlas", "batch", "batch.json",
-            "--dry-run", "--skip-verification", "--continue-on-error"
-        ]):
+        with patch.object(
+            sys,
+            "argv",
+            [
+                "algo-atlas",
+                "batch",
+                "batch.json",
+                "--dry-run",
+                "--skip-verification",
+                "--continue-on-error",
+            ],
+        ):
             args = parse_args()
             assert args.command == "batch"
             assert args.file == "batch.json"
@@ -176,10 +184,18 @@ class TestParseJsonBatch:
 
     def test_parse_basic_json(self, tmp_path):
         """Test parsing basic JSON format."""
-        content = json.dumps([
-            {"url": "https://leetcode.com/problems/two-sum/", "solution": "solution1.py"},
-            {"url": "https://leetcode.com/problems/valid-parentheses/", "solution": "solution2.py"},
-        ])
+        content = json.dumps(
+            [
+                {
+                    "url": "https://leetcode.com/problems/two-sum/",
+                    "solution": "solution1.py",
+                },
+                {
+                    "url": "https://leetcode.com/problems/valid-parentheses/",
+                    "solution": "solution2.py",
+                },
+            ]
+        )
 
         items = _parse_json_batch(content, tmp_path)
 
@@ -222,9 +238,7 @@ class TestParseBatchFile:
     def test_parse_text_file(self, tmp_path):
         """Test parsing .txt batch file."""
         batch_file = tmp_path / "batch.txt"
-        batch_file.write_text(
-            "https://leetcode.com/problems/two-sum/, solution.py\n"
-        )
+        batch_file.write_text("https://leetcode.com/problems/two-sum/, solution.py\n")
 
         items = parse_batch_file(batch_file)
 
@@ -234,9 +248,16 @@ class TestParseBatchFile:
     def test_parse_json_file(self, tmp_path):
         """Test parsing .json batch file."""
         batch_file = tmp_path / "batch.json"
-        batch_file.write_text(json.dumps([
-            {"url": "https://leetcode.com/problems/two-sum/", "solution": "solution.py"}
-        ]))
+        batch_file.write_text(
+            json.dumps(
+                [
+                    {
+                        "url": "https://leetcode.com/problems/two-sum/",
+                        "solution": "solution.py",
+                    }
+                ]
+            )
+        )
 
         items = parse_batch_file(batch_file)
 
@@ -253,9 +274,7 @@ class TestParseBatchFile:
     def test_parse_csv_as_text(self, tmp_path):
         """Test parsing .csv file as text format."""
         batch_file = tmp_path / "batch.csv"
-        batch_file.write_text(
-            "https://leetcode.com/problems/two-sum/, solution.py\n"
-        )
+        batch_file.write_text("https://leetcode.com/problems/two-sum/, solution.py\n")
 
         items = parse_batch_file(batch_file)
 

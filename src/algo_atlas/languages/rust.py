@@ -25,8 +25,8 @@ _RUST_KEYWORDS = frozenset({"new", "default", "clone", "fmt", "from", "into"})
 # [^)]* works for LeetCode params because Rust generic types use <> not ().
 _METHOD_PATTERN = re.compile(
     r"\bpub\s+fn\s+"
-    r"(\w+)\s*"       # group(1) = method name
-    r"\(([^)]*)\)",   # group(2) = raw params string
+    r"(\w+)\s*"  # group(1) = method name
+    r"\(([^)]*)\)",  # group(2) = raw params string
     re.MULTILINE,
 )
 
@@ -34,8 +34,8 @@ _METHOD_PATTERN = re.compile(
 # group(1) = method name, group(2) = params, group(3) = return type (optional).
 _METHOD_FULL_PATTERN = re.compile(
     r"\bpub\s+fn\s+"
-    r"(\w+)\s*"              # group(1) = method name
-    r"\(([^)]*)\)"           # group(2) = params
+    r"(\w+)\s*"  # group(1) = method name
+    r"\(([^)]*)\)"  # group(2) = params
     r"(?:\s*->\s*([^{]+?))?"  # group(3) = return type (optional, before {)
     r"\s*\{",
     re.MULTILINE,
@@ -122,10 +122,13 @@ class RustLanguage(LanguageSupport):
             result = subprocess.run(
                 [
                     "rustc",
-                    "--edition", "2021",
-                    "--crate-type", "lib",
+                    "--edition",
+                    "2021",
+                    "--crate-type",
+                    "lib",
                     "--emit=metadata",
-                    "-o", str(meta_path),
+                    "-o",
+                    str(meta_path),
                     str(src_path),
                 ],
                 capture_output=True,
@@ -212,7 +215,8 @@ class RustLanguage(LanguageSupport):
                 parts = self._split_rust_params(params_str)
                 # Exclude &self / &mut self receiver
                 parts = [
-                    p for p in parts
+                    p
+                    for p in parts
                     if not p.lstrip("&").strip().startswith("self")
                     and not p.lstrip("&").strip().startswith("mut self")
                 ]
@@ -286,8 +290,10 @@ class RustLanguage(LanguageSupport):
             compile_result = subprocess.run(
                 [
                     "rustc",
-                    "--edition", "2021",
-                    "-o", str(bin_path),
+                    "--edition",
+                    "2021",
+                    "-o",
+                    str(bin_path),
                     str(src_path),
                 ],
                 capture_output=True,
@@ -395,7 +401,7 @@ class RustLanguage(LanguageSupport):
         is_void = not return_type
         if is_void:
             call_line = f"    Solution::{method_name}({args_str});"
-            serialize = '    println!("{{\\\"result\\\":null}}");'
+            serialize = '    println!("{{\\"result\\":null}}");'
         else:
             call_line = f"    let result = Solution::{method_name}({args_str});"
             serialize = self._get_serialize_snippet(return_type)
@@ -408,12 +414,8 @@ class RustLanguage(LanguageSupport):
 
         return (
             "#![allow(dead_code, unused_variables, unused_mut)]\n"
-            "struct Solution;\n\n"
-            + code + "\n"
-            + _RUST_JSON_HELPERS + "\n"
-            "fn main() {\n"
-            + body
-            + "}\n"
+            "struct Solution;\n\n" + code + "\n" + _RUST_JSON_HELPERS + "\n"
+            "fn main() {\n" + body + "}\n"
         )
 
     @staticmethod
@@ -421,19 +423,19 @@ class RustLanguage(LanguageSupport):
         """Return the println! statement for the given Rust return type."""
         rt = return_type.strip()
         if rt in ("i32", "i64", "u32", "u64", "usize", "f64", "f32", "bool"):
-            return '    println!("{{\\\"result\\\":{}}}", result);'
+            return '    println!("{{\\"result\\":{}}}", result);'
         if rt == "String":
-            return '    println!("{{\\\"result\\\":{}}}", _json_str(&result));'
+            return '    println!("{{\\"result\\":{}}}", _json_str(&result));'
         if rt in ("Vec<i32>", "Vec<u32>"):
-            return '    println!("{{\\\"result\\\":{}}}", _json_vec_i32(&result));'
+            return '    println!("{{\\"result\\":{}}}", _json_vec_i32(&result));'
         if rt in ("Vec<i64>", "Vec<u64>"):
-            return '    println!("{{\\\"result\\\":{}}}", _json_vec_i64(&result));'
+            return '    println!("{{\\"result\\":{}}}", _json_vec_i64(&result));'
         if rt == "Vec<String>":
-            return '    println!("{{\\\"result\\\":{}}}", _json_vec_str(&result));'
+            return '    println!("{{\\"result\\":{}}}", _json_vec_str(&result));'
         if rt == "Vec<Vec<i32>>":
-            return '    println!("{{\\\"result\\\":{}}}", _json_vec_vec_i32(&result));'
+            return '    println!("{{\\"result\\":{}}}", _json_vec_vec_i32(&result));'
         # Fallback: Rust Debug format (not JSON-safe but better than nothing)
-        return '    println!("{{\\\"result\\\":{:?}}}", result);'
+        return '    println!("{{\\"result\\":{:?}}}", result);'
 
     @staticmethod
     def _parse_rust_params(params_str: str) -> list[dict]:
@@ -452,7 +454,7 @@ class RustLanguage(LanguageSupport):
             if colon_idx < 0:
                 continue
             name = p[:colon_idx].strip().lstrip("&").lstrip("mut").strip()
-            rust_type = p[colon_idx + 1:].strip().lstrip("&").lstrip("mut").strip()
+            rust_type = p[colon_idx + 1 :].strip().lstrip("&").lstrip("mut").strip()
             if name:
                 params.append({"name": name, "type": rust_type})
         return params

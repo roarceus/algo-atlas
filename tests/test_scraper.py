@@ -152,7 +152,9 @@ class TestScrapeProblem:
         assert "Array" in result.topic_tags
 
     @patch("algo_atlas.core.scraper._make_request")
-    def test_scrape_preserves_code_snippets_raw(self, mock_request, mock_graphql_response):
+    def test_scrape_preserves_code_snippets_raw(
+        self, mock_request, mock_graphql_response
+    ):
         """Test that scraping preserves raw code snippets."""
         mock_request.return_value = mock_graphql_response["data"]["question"]
 

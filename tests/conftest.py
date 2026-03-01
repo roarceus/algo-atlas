@@ -43,7 +43,9 @@ def sample_problem():
         test_cases=["[2,7,11,15]", "9", "[3,2,4]", "6", "[3,3]", "6"],
         code_snippet="class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass",
         topic_tags=["Array", "Hash Table"],
-        hints=["A really brute force way would be to search for all possible pairs of numbers but that would be too slow."],
+        hints=[
+            "A really brute force way would be to search for all possible pairs of numbers but that would be too slow."
+        ],
     )
 
 
@@ -465,7 +467,9 @@ def mock_graphql_response():
                     {"name": "Array", "slug": "array"},
                     {"name": "Hash Table", "slug": "hash-table"},
                 ],
-                "hints": ["A really brute force way would be to search for all possible pairs."],
+                "hints": [
+                    "A really brute force way would be to search for all possible pairs."
+                ],
             }
         }
     }

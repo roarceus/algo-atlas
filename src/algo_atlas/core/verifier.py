@@ -37,7 +37,11 @@ class VerificationResult:
     @property
     def all_passed(self) -> bool:
         """Check if all tests passed."""
-        return self.syntax_valid and self.tests_run > 0 and self.tests_passed == self.tests_run
+        return (
+            self.syntax_valid
+            and self.tests_run > 0
+            and self.tests_passed == self.tests_run
+        )
 
 
 def _compare_results(expected: Any, actual: Any) -> bool:
@@ -71,7 +75,9 @@ def _compare_results(expected: Any, actual: Any) -> bool:
     return False
 
 
-def _group_test_case_inputs(test_cases: list[str], args_per_case: int) -> list[list[str]]:
+def _group_test_case_inputs(
+    test_cases: list[str], args_per_case: int
+) -> list[list[str]]:
     """Group raw test case lines into individual test cases.
 
     Args:
@@ -86,7 +92,7 @@ def _group_test_case_inputs(test_cases: list[str], args_per_case: int) -> list[l
 
     grouped = []
     for i in range(0, len(test_cases), args_per_case):
-        group = test_cases[i:i + args_per_case]
+        group = test_cases[i : i + args_per_case]
         if len(group) == args_per_case:
             grouped.append(group)
 
@@ -266,4 +272,6 @@ def verify_solution(
     Returns:
         VerificationResult with complete verification status.
     """
-    return run_test_cases(solution_code, test_cases, examples, expected_outputs, language)
+    return run_test_cases(
+        solution_code, test_cases, examples, expected_outputs, language
+    )

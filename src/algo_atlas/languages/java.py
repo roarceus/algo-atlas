@@ -32,10 +32,7 @@ class JavaLanguage(LanguageSupport):
 
     def can_run_tests(self) -> bool:
         """Check if javac and java are available."""
-        return (
-            shutil.which("javac") is not None
-            and shutil.which("java") is not None
-        )
+        return shutil.which("javac") is not None and shutil.which("java") is not None
 
     def check_syntax(self, code: str) -> SyntaxResult:
         """Check Java syntax using javac.
@@ -82,9 +79,9 @@ class JavaLanguage(LanguageSupport):
                             error_line = int(parts[:colon_idx])
                         except ValueError:
                             pass
-                        msg = parts[colon_idx + 1:].strip()
+                        msg = parts[colon_idx + 1 :].strip()
                         if msg.startswith("error:"):
-                            msg = msg[len("error:"):].strip()
+                            msg = msg[len("error:") :].strip()
                         error_msg = msg
                     break
 
@@ -107,14 +104,13 @@ class JavaLanguage(LanguageSupport):
         finally:
             if tmp_dir:
                 import shutil as sh
+
                 sh.rmtree(tmp_dir, ignore_errors=True)
 
     # Pattern for LeetCode Java method signatures inside class Solution.
     # Matches: public <returnType> methodName(<params>)
     # Return type can be multi-word like "int[]", "List<Integer>", etc.
-    _METHOD_PATTERN = re.compile(
-        r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)"
-    )
+    _METHOD_PATTERN = re.compile(r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)")
 
     def extract_method_name(self, code: str) -> Optional[str]:
         """Extract the main method name from LeetCode Java solution.
@@ -291,6 +287,7 @@ class JavaLanguage(LanguageSupport):
         finally:
             if tmp_dir:
                 import shutil as sh
+
                 sh.rmtree(tmp_dir, ignore_errors=True)
 
     @staticmethod
@@ -408,8 +405,7 @@ public class Main {{
                 return f"new String[]{{{elems}}}"
             if all(isinstance(x, list) for x in value):
                 rows = ", ".join(
-                    "new int[]{" + ", ".join(str(i) for i in row) + "}"
-                    for row in value
+                    "new int[]{" + ", ".join(str(i) for i in row) + "}" for row in value
                 )
                 return f"new int[][]{{{rows}}}"
         return str(value)
