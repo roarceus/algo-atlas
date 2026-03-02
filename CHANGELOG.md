@@ -2,6 +2,38 @@
 
 <!-- version list -->
 
+## v1.10.0 (2026-03-02)
+
+### Bug Fixes
+
+- **ci**: Use fwilhe2/setup-kotlin@v1 (v2 does not exist)
+  ([`d9a0c54`](https://github.com/roarceus/algo-atlas/commit/d9a0c5406a196decf4f758abbe647589dd54e1a9))
+
+- **kotlin**: Move run_test_case stub back inside KotlinLanguage class
+  ([`a41508c`](https://github.com/roarceus/algo-atlas/commit/a41508c5f1195aff8a77d979e019435faeee17d5))
+
+### Code Style
+
+- Apply black formatting to all source and test files
+  ([`e1d52d5`](https://github.com/roarceus/algo-atlas/commit/e1d52d5bba34741db318b9eb6235b3925c7be0e1))
+
+### Features
+
+- **kotlin**: Add KotlinLanguage skeleton with kotlinc syntax checker
+  ([`5e6bff7`](https://github.com/roarceus/algo-atlas/commit/5e6bff75894a861eb84af3cbed802b976b0b0e02))
+
+- **kotlin**: Implement extract_method_name and count_method_params
+  ([`7433f47`](https://github.com/roarceus/algo-atlas/commit/7433f47a57b9d205ab5f7250e0bc67e61ba73dd2))
+
+- **kotlin**: Implement run_test_case with kotlinc compile-and-run harness
+  ([`a233aeb`](https://github.com/roarceus/algo-atlas/commit/a233aeb3ffbad92944358c1d7b73fd4204916ae6))
+
+### Testing
+
+- **kotlin**: Add test suite, fixtures, registry/scraper coverage, and README update
+  ([`9926441`](https://github.com/roarceus/algo-atlas/commit/9926441f282090d0c3ff555dd200696407a6f234))
+
+
 ## v1.9.0 (2026-02-28)
 
 ### Bug Fixes
