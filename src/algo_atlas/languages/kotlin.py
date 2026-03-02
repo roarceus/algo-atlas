@@ -77,10 +77,42 @@ class KotlinLanguage(LanguageSupport):
             return SyntaxResult(valid=False, error_message=msg)
 
     def extract_method_name(self, code: str) -> Optional[str]:
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _KOTLIN_KEYWORDS:
+                return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        return 0
+        m = _METHOD_PATTERN.search(code)
+        if not m:
+            return 0
+        return len(_split_kotlin_params(m.group(2)))
+
+
+def _split_kotlin_params(params_str: str) -> list[str]:
+    """Split param string by comma, ignoring commas inside angle brackets."""
+    parts: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in params_str:
+        if ch == "<":
+            depth += 1
+            current.append(ch)
+        elif ch == ">":
+            depth -= 1
+            current.append(ch)
+        elif ch == "," and depth == 0:
+            part = "".join(current).strip()
+            if part:
+                parts.append(part)
+            current = []
+        else:
+            current.append(ch)
+    part = "".join(current).strip()
+    if part:
+        parts.append(part)
+    return parts
 
     def run_test_case(
         self, code: str, input_args: list, expected_output: Any
