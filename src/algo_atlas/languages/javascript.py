@@ -44,7 +44,10 @@ class JavaScriptLanguage(LanguageSupport):
 
         try:
             with tempfile.NamedTemporaryFile(
-                suffix=".js", mode="w", encoding="utf-8", delete=False,
+                suffix=".js",
+                mode="w",
+                encoding="utf-8",
+                delete=False,
             ) as f:
                 f.write(code)
                 tmp_path = f.name
@@ -105,21 +108,13 @@ class JavaScriptLanguage(LanguageSupport):
     # Patterns for LeetCode JS function signatures
     _FUNC_PATTERNS = [
         # var/let/const name = function(params) {
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"),
         # function name(params) {
-        re.compile(
-            r"function\s+(\w+)\s*\(([^)]*)\)"
-        ),
+        re.compile(r"function\s+(\w+)\s*\(([^)]*)\)"),
         # var/let/const name = (params) =>
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\)\s*=>"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\)\s*=>"),
         # var/let/const name = param =>  (single param arrow, no parens)
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"),
     ]
 
     def extract_method_name(self, code: str) -> Optional[str]:
@@ -186,7 +181,10 @@ class JavaScriptLanguage(LanguageSupport):
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(
-                suffix=".js", mode="w", encoding="utf-8", delete=False,
+                suffix=".js",
+                mode="w",
+                encoding="utf-8",
+                delete=False,
             ) as f:
                 f.write(harness)
                 tmp_path = f.name
@@ -274,7 +272,9 @@ class JavaScriptLanguage(LanguageSupport):
 
     @staticmethod
     def _build_test_harness(
-        code: str, func_name: str, input_args: list[Any],
+        code: str,
+        func_name: str,
+        input_args: list[Any],
     ) -> str:
         """Build a JavaScript test harness script.
 

@@ -44,10 +44,7 @@ class TestJavaInfo:
 
     def test_can_run_tests_reflects_jdk(self):
         lang = JavaLanguage()
-        has_jdk = (
-            shutil.which("javac") is not None
-            and shutil.which("java") is not None
-        )
+        has_jdk = shutil.which("javac") is not None and shutil.which("java") is not None
         assert lang.can_run_tests() is has_jdk
 
 
@@ -165,7 +162,7 @@ class TestJavaRunTestCase:
 
     def test_runtime_error(self):
         lang = JavaLanguage()
-        code = "class Solution { public int boom() { throw new RuntimeException(\"kaboom\"); } }"
+        code = 'class Solution { public int boom() { throw new RuntimeException("kaboom"); } }'
         result = lang.run_test_case(code=code, input_args=[], expected_output=None)
         assert result.passed is False
         assert result.error is not None

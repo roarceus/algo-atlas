@@ -59,15 +59,16 @@ class TypeScriptLanguage(LanguageSupport):
         if not self.can_run_tests():
             return SyntaxResult(
                 valid=False,
-                error_message=(
-                    "tsx not found. Install with: npm install -g tsx"
-                ),
+                error_message=("tsx not found. Install with: npm install -g tsx"),
             )
 
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(
-                suffix=".ts", mode="w", encoding="utf-8", delete=False,
+                suffix=".ts",
+                mode="w",
+                encoding="utf-8",
+                delete=False,
             ) as f:
                 f.write(code)
                 tmp_path = f.name
@@ -101,7 +102,7 @@ class TypeScriptLanguage(LanguageSupport):
                             pass
                         msg_part = parts[2].strip()
                         if msg_part.startswith("ERROR:"):
-                            msg_part = msg_part[len("ERROR:"):].strip()
+                            msg_part = msg_part[len("ERROR:") :].strip()
                         error_msg = msg_part
                     break
 
@@ -114,9 +115,7 @@ class TypeScriptLanguage(LanguageSupport):
         except FileNotFoundError:
             return SyntaxResult(
                 valid=False,
-                error_message=(
-                    "tsx not found. Install with: npm install -g tsx"
-                ),
+                error_message=("tsx not found. Install with: npm install -g tsx"),
             )
         except subprocess.TimeoutExpired:
             if tmp_path:
@@ -131,21 +130,13 @@ class TypeScriptLanguage(LanguageSupport):
     # the ([^)]*) group but don't affect matching.
     _FUNC_PATTERNS = [
         # var/let/const name = function(params) {
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)"),
         # function name(params) {
-        re.compile(
-            r"function\s+(\w+)\s*\(([^)]*)\)"
-        ),
+        re.compile(r"function\s+(\w+)\s*\(([^)]*)\)"),
         # var/let/const name = (params) =>  (TS may have return type before =>)
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\).*?=>"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*\(([^)]*)\).*?=>"),
         # var/let/const name = param =>  (single param arrow, no parens)
-        re.compile(
-            r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"
-        ),
+        re.compile(r"(?:var|let|const)\s+(\w+)\s*=\s*(\w+)\s*=>"),
     ]
 
     def extract_method_name(self, code: str) -> Optional[str]:
@@ -213,7 +204,10 @@ class TypeScriptLanguage(LanguageSupport):
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(
-                suffix=".ts", mode="w", encoding="utf-8", delete=False,
+                suffix=".ts",
+                mode="w",
+                encoding="utf-8",
+                delete=False,
             ) as f:
                 f.write(harness)
                 tmp_path = f.name
@@ -309,7 +303,9 @@ class TypeScriptLanguage(LanguageSupport):
 
     @staticmethod
     def _build_test_harness(
-        code: str, func_name: str, input_args: list[Any],
+        code: str,
+        func_name: str,
+        input_args: list[Any],
     ) -> str:
         """Build a TypeScript test harness script.
 

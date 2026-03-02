@@ -71,7 +71,9 @@ class TestCSharpCheckSyntax:
     def test_dotnet_not_found(self):
         lang = CSharpLanguage()
         with patch("shutil.which", return_value=None):
-            result = lang.check_syntax("class Solution { public int F() { return 0; } }")
+            result = lang.check_syntax(
+                "class Solution { public int F() { return 0; } }"
+            )
         assert result.valid is False
         assert "dotnet not found" in result.error_message
 
@@ -175,7 +177,7 @@ class TestCSharpRunTestCase:
         code = (
             "class Solution {\n"
             "    public int Boom(int n) {\n"
-            "        throw new System.Exception(\"kaboom\");\n"
+            '        throw new System.Exception("kaboom");\n'
             "    }\n"
             "}"
         )

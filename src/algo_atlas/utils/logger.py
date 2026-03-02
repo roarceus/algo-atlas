@@ -7,8 +7,12 @@ from typing import Generator, Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
-    BarColumn, MofNCompleteColumn, Progress,
-    SpinnerColumn, TextColumn, TimeElapsedColumn,
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
 )
 from rich.prompt import Confirm, Prompt
 from rich.status import Status
@@ -17,15 +21,17 @@ from rich.text import Text
 from rich.theme import Theme
 
 # Custom theme for AlgoAtlas
-ALGOATLAS_THEME = Theme({
-    "success": "green",
-    "error": "bold red",
-    "warning": "bold yellow",
-    "info": "blue",
-    "step": "cyan",
-    "header": "bold cyan",
-    "debug": "dim",
-})
+ALGOATLAS_THEME = Theme(
+    {
+        "success": "green",
+        "error": "bold red",
+        "warning": "bold yellow",
+        "info": "blue",
+        "step": "cyan",
+        "header": "bold cyan",
+        "debug": "dim",
+    }
+)
 
 
 def _supports_unicode() -> bool:
@@ -48,6 +54,7 @@ def _is_terminal() -> bool:
         return True
 
     import os
+
     # TERM set to something useful means a terminal emulator is present
     term = os.environ.get("TERM", "")
     if term and term != "dumb":
@@ -117,11 +124,13 @@ class Logger:
     def header(self, message: str) -> None:
         """Print header message with panel."""
         self.console.print()
-        self.console.print(Panel(
-            Text(message, style="header", justify="center"),
-            border_style="cyan",
-            padding=(0, 2),
-        ))
+        self.console.print(
+            Panel(
+                Text(message, style="header", justify="center"),
+                border_style="cyan",
+                padding=(0, 2),
+            )
+        )
 
     def blank(self) -> None:
         """Print blank line."""
@@ -192,7 +201,9 @@ class Logger:
                 yield status
 
     @contextmanager
-    def progress(self, description: str, total: int) -> Generator[tuple[Progress, int], None, None]:
+    def progress(
+        self, description: str, total: int
+    ) -> Generator[tuple[Progress, int], None, None]:
         """Context manager for showing a progress bar during batch operations.
 
         Args:

@@ -24,7 +24,8 @@ def parse_args() -> argparse.Namespace:
         help="Preview generated documentation without saving to vault",
     )
     parser.add_argument(
-        "-l", "--language",
+        "-l",
+        "--language",
         default=None,
         help="Language slug for solution (e.g., python3, javascript). Defaults to config setting.",
     )
@@ -41,11 +42,13 @@ def parse_args() -> argparse.Namespace:
         help="Search query (problem number or keyword in title)",
     )
     search_parser.add_argument(
-        "-t", "--topic",
+        "-t",
+        "--topic",
         help="Filter by topic (partial match)",
     )
     search_parser.add_argument(
-        "-d", "--difficulty",
+        "-d",
+        "--difficulty",
         choices=["easy", "medium", "hard"],
         help="Filter by difficulty",
     )
@@ -80,7 +83,8 @@ def parse_args() -> argparse.Namespace:
         help="Continue processing remaining items if one fails",
     )
     batch_parser.add_argument(
-        "-l", "--language",
+        "-l",
+        "--language",
         default=None,
         help="Language slug for solutions (e.g., python3, javascript). Defaults to config setting.",
     )

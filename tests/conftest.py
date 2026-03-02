@@ -43,7 +43,9 @@ def sample_problem():
         test_cases=["[2,7,11,15]", "9", "[3,2,4]", "6", "[3,3]", "6"],
         code_snippet="class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass",
         topic_tags=["Array", "Hash Table"],
-        hints=["A really brute force way would be to search for all possible pairs of numbers but that would be too slow."],
+        hints=[
+            "A really brute force way would be to search for all possible pairs of numbers but that would be too slow."
+        ],
     )
 
 
@@ -391,6 +393,48 @@ class Solution {
 
 
 @pytest.fixture
+def valid_kotlin_solution():
+    """Valid Two Sum solution in Kotlin."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray {
+        val map = HashMap<Int, Int>()
+        for (i in nums.indices) {
+            val comp = target - nums[i]
+            if (map.containsKey(comp)) return intArrayOf(map[comp]!!, i)
+            map[nums[i]] = i
+        }
+        return intArrayOf()
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_kotlin_syntax():
+    """Kotlin code with syntax error."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray
+        return intArrayOf(0, 1)
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_kotlin_solution():
+    """Kotlin solution that returns wrong results."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray {
+        return intArrayOf(0, 0)
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -460,12 +504,19 @@ def mock_graphql_response():
                         "langSlug": "csharp",
                         "code": "public class Solution {\n    public int[] TwoSum(int[] nums, int target) {\n        \n    }\n}",
                     },
+                    {
+                        "lang": "Kotlin",
+                        "langSlug": "kotlin",
+                        "code": "class Solution {\n    fun twoSum(nums: IntArray, target: Int): IntArray {\n        \n    }\n}",
+                    },
                 ],
                 "topicTags": [
                     {"name": "Array", "slug": "array"},
                     {"name": "Hash Table", "slug": "hash-table"},
                 ],
-                "hints": ["A really brute force way would be to search for all possible pairs."],
+                "hints": [
+                    "A really brute force way would be to search for all possible pairs."
+                ],
             }
         }
     }

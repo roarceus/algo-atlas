@@ -37,7 +37,9 @@ from algo_atlas.utils.file_manager import (
 
 
 def scrape_problem_with_progress(
-    logger, url: str, language: Optional[str] = None,
+    logger,
+    url: str,
+    language: Optional[str] = None,
 ) -> Optional[ProblemData]:
     """Scrape problem with progress indication.
 
@@ -54,7 +56,9 @@ def scrape_problem_with_progress(
         problem = scrape_problem(url, language=language)
 
     if problem:
-        logger.success(f"Found: {problem.number}. {problem.title} ({problem.difficulty})")
+        logger.success(
+            f"Found: {problem.number}. {problem.title} ({problem.difficulty})"
+        )
         logger.info(f"Topics: {', '.join(problem.topic_tags)}")
         return problem
     else:
@@ -105,12 +109,16 @@ def verify_solution_with_progress(
 
     if result.tests_run > 0:
         if result.all_passed:
-            logger.success(f"All tests passed ({result.tests_passed}/{result.tests_run})")
+            logger.success(
+                f"All tests passed ({result.tests_passed}/{result.tests_run})"
+            )
         else:
             logger.warning(f"Tests: {result.tests_passed}/{result.tests_run} passed")
             for i, tr in enumerate(result.test_results):
                 if not tr.passed:
-                    logger.error(f"  Test {i+1}: expected {tr.expected}, got {tr.actual}")
+                    logger.error(
+                        f"  Test {i+1}: expected {tr.expected}, got {tr.actual}"
+                    )
                     if tr.error:
                         logger.error(f"    Error: {tr.error}")
 
@@ -330,7 +338,9 @@ def display_dry_run_output(
     logger.header("DRY RUN OUTPUT")
     logger.blank()
 
-    logger.info(f"Would save to: {problem.difficulty}/{problem.number}. {problem.title}/")
+    logger.info(
+        f"Would save to: {problem.difficulty}/{problem.number}. {problem.title}/"
+    )
     logger.blank()
 
     logger.step(f"{solution_filename}:")
@@ -381,7 +391,9 @@ def run_workflow(
         return False
 
     # Verify solution
-    if not verify_solution_with_progress(logger, solution_code, problem, language=language):
+    if not verify_solution_with_progress(
+        logger, solution_code, problem, language=language
+    ):
         if not logger.confirm("Continue despite verification issues?", default=False):
             return False
 
@@ -397,12 +409,20 @@ def run_workflow(
 
     # Dry run: display output and exit
     if dry_run:
-        display_dry_run_output(logger, problem, solution_code, documentation, language=language)
+        display_dry_run_output(
+            logger, problem, solution_code, documentation, language=language
+        )
         return True
 
     # Save to vault
     save_to_vault(
-        logger, vault_path, problem, solution_code, documentation, url, language=language,
+        logger,
+        vault_path,
+        problem,
+        solution_code,
+        documentation,
+        url,
+        language=language,
     )
 
     return True

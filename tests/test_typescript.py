@@ -12,6 +12,7 @@ from algo_atlas.languages.typescript import TypeScriptLanguage
 # Registry integration
 # ---------------------------------------------------------------------------
 
+
 class TestTypeScriptRegistry:
     """Tests for TypeScript in the language registry."""
 
@@ -34,6 +35,7 @@ class TestTypeScriptRegistry:
 # LanguageInfo metadata
 # ---------------------------------------------------------------------------
 
+
 class TestTypeScriptInfo:
     """Tests for TypeScriptLanguage metadata."""
 
@@ -53,16 +55,14 @@ class TestTypeScriptInfo:
 
     def test_can_run_tests_reflects_runtime(self):
         lang = TypeScriptLanguage()
-        has_runtime = (
-            shutil.which("tsx") is not None
-            or shutil.which("npx") is not None
-        )
+        has_runtime = shutil.which("tsx") is not None or shutil.which("npx") is not None
         assert lang.can_run_tests() is has_runtime
 
 
 # ---------------------------------------------------------------------------
 # check_syntax
 # ---------------------------------------------------------------------------
+
 
 class TestTypeScriptCheckSyntax:
     """Tests for TypeScriptLanguage.check_syntax()."""
@@ -96,12 +96,15 @@ class TestTypeScriptCheckSyntax:
 # extract_method_name
 # ---------------------------------------------------------------------------
 
+
 class TestTypeScriptExtractMethodName:
     """Tests for TypeScriptLanguage.extract_method_name()."""
 
     def test_function_declaration_with_types(self):
         lang = TypeScriptLanguage()
-        code = "function twoSum(nums: number[], target: number): number[] { return []; }"
+        code = (
+            "function twoSum(nums: number[], target: number): number[] { return []; }"
+        )
         assert lang.extract_method_name(code) == "twoSum"
 
     def test_var_function_expression(self):
@@ -128,12 +131,15 @@ class TestTypeScriptExtractMethodName:
 # count_method_params
 # ---------------------------------------------------------------------------
 
+
 class TestTypeScriptCountMethodParams:
     """Tests for TypeScriptLanguage.count_method_params()."""
 
     def test_two_params_with_types(self):
         lang = TypeScriptLanguage()
-        code = "function twoSum(nums: number[], target: number): number[] { return []; }"
+        code = (
+            "function twoSum(nums: number[], target: number): number[] { return []; }"
+        )
         assert lang.count_method_params(code) == 2
 
     def test_one_param_arrow_no_parens(self):
@@ -154,6 +160,7 @@ class TestTypeScriptCountMethodParams:
 # ---------------------------------------------------------------------------
 # run_test_case
 # ---------------------------------------------------------------------------
+
 
 class TestTypeScriptRunTestCase:
     """Tests for TypeScriptLanguage.run_test_case()."""

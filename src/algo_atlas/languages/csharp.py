@@ -20,15 +20,11 @@ from algo_atlas.languages.base import (
 # group(1) = method name, group(2) = raw params string.
 # \S+ matches the return type as a single non-whitespace token, which covers
 # int, bool, string, int[], IList<int>, IList<IList<int>>, etc.
-_METHOD_PATTERN = re.compile(
-    r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)"
-)
+_METHOD_PATTERN = re.compile(r"public\s+\S+\s+(\w+)\s*\(([^)]*)\)")
 
 # Same as _METHOD_PATTERN but also captures the return type as group(1).
 # group(1) = return type, group(2) = method name, group(3) = params.
-_METHOD_FULL_PATTERN = re.compile(
-    r"public\s+(\S+)\s+(\w+)\s*\(([^)]*)\)"
-)
+_METHOD_FULL_PATTERN = re.compile(r"public\s+(\S+)\s+(\w+)\s*\(([^)]*)\)")
 
 # Minimal .csproj for the test harness (executable — needs a Main).
 _CS_CSPROJ_EXE = """\
@@ -103,9 +99,7 @@ class CSharpLanguage(LanguageSupport):
             tmp_dir = tempfile.mkdtemp()
             tmp_path = Path(tmp_dir)
             (tmp_path / "solution.csproj").write_text(_CS_CSPROJ_LIB, encoding="utf-8")
-            (tmp_path / "solution.cs").write_text(
-                _CS_PREAMBLE + code, encoding="utf-8"
-            )
+            (tmp_path / "solution.cs").write_text(_CS_PREAMBLE + code, encoding="utf-8")
 
             result = subprocess.run(
                 ["dotnet", "build", "--nologo", "-v", "quiet"],
@@ -248,12 +242,8 @@ class CSharpLanguage(LanguageSupport):
             out_path = tmp_path / "out"
             out_path.mkdir()
 
-            (tmp_path / "solution.csproj").write_text(
-                _CS_CSPROJ_EXE, encoding="utf-8"
-            )
-            (tmp_path / "Solution.cs").write_text(
-                _CS_PREAMBLE + code, encoding="utf-8"
-            )
+            (tmp_path / "solution.csproj").write_text(_CS_CSPROJ_EXE, encoding="utf-8")
+            (tmp_path / "Solution.cs").write_text(_CS_PREAMBLE + code, encoding="utf-8")
             (tmp_path / "Program.cs").write_text(
                 self._build_test_harness(code, method_name, input_args),
                 encoding="utf-8",
@@ -376,7 +366,7 @@ class CSharpLanguage(LanguageSupport):
             call_line = f"        var result = sol.{method_name}({args_str});"
             output_line = (
                 '        Console.WriteLine("{\\"result\\":" + '
-                "JsonSerializer.Serialize(result) + \"}\");"
+                'JsonSerializer.Serialize(result) + "}");'
             )
 
         body = ""
@@ -390,9 +380,7 @@ class CSharpLanguage(LanguageSupport):
             "using System.Text.Json;\n\n"
             "class Program {\n"
             "    static void Main() {\n"
-            "        var sol = new Solution();\n"
-            + body
-            + "    }\n"
+            "        var sol = new Solution();\n" + body + "    }\n"
             "}\n"
         )
 

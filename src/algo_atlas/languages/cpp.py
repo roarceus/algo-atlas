@@ -75,12 +75,12 @@ _CPP_KEYWORDS = frozenset({"if", "for", "while", "switch", "catch", "return"})
 # pointers ("ListNode*") — handled by the non-greedy [\w<>\[\]*&,:\s]+? match.
 # Requiring [^{]*\{ at the end filters out plain function calls.
 _METHOD_PATTERN = re.compile(
-    r"^[ \t]+"                     # indented line
-    r"(?!//)"                      # not a comment
-    r"(?:[\w<>\[\]*&,:\s]+?)\s+"   # return type (non-greedy, handles long long)
-    r"(\w+)\s*"                    # method name
-    r"\(([^)]*)\)"                 # params
-    r"[^{]*\{",                    # up to opening brace (method definition)
+    r"^[ \t]+"  # indented line
+    r"(?!//)"  # not a comment
+    r"(?:[\w<>\[\]*&,:\s]+?)\s+"  # return type (non-greedy, handles long long)
+    r"(\w+)\s*"  # method name
+    r"\(([^)]*)\)"  # params
+    r"[^{]*\{",  # up to opening brace (method definition)
     re.MULTILINE,
 )
 
@@ -149,12 +149,12 @@ class CppLanguage(LanguageSupport):
                             error_line = max(1, raw_line - preamble_lines)
                         except ValueError:
                             pass
-                        rest = parts[colon_idx + 1:].strip()
+                        rest = parts[colon_idx + 1 :].strip()
                         col_end = rest.find(":")
                         if col_end > 0:
-                            rest = rest[col_end + 1:].strip()
+                            rest = rest[col_end + 1 :].strip()
                         if rest.startswith("error:"):
-                            rest = rest[len("error:"):].strip()
+                            rest = rest[len("error:") :].strip()
                         error_msg = rest
                     break
 

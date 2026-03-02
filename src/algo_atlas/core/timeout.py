@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 class TimeoutError(Exception):
     """Raised when execution times out."""
+
     pass
 
 

@@ -2,7 +2,12 @@
 
 from typing import Optional
 
-from algo_atlas.languages.base import LanguageInfo, LanguageSupport, SyntaxResult, TestResult
+from algo_atlas.languages.base import (
+    LanguageInfo,
+    LanguageSupport,
+    SyntaxResult,
+    TestResult,
+)
 
 # Registry of language slug -> LanguageSupport instance
 _registry: dict[str, LanguageSupport] = {}
@@ -96,6 +101,8 @@ def _ensure_registered() -> None:
     from algo_atlas.languages.go import GoLanguage
     from algo_atlas.languages.rust import RustLanguage
     from algo_atlas.languages.csharp import CSharpLanguage
+    from algo_atlas.languages.kotlin import KotlinLanguage
+
     register(PythonLanguage())
     register(JavaScriptLanguage())
     register(TypeScriptLanguage())
@@ -105,6 +112,7 @@ def _ensure_registered() -> None:
     register(GoLanguage())
     register(RustLanguage())
     register(CSharpLanguage())
+    register(KotlinLanguage())
 
 
 __all__ = [

@@ -10,7 +10,10 @@ LABEL_DEFINITIONS = {
     "easy": {"color": "00ff00", "description": "Easy difficulty problem"},
     "medium": {"color": "ffff00", "description": "Medium difficulty problem"},
     "hard": {"color": "ff0000", "description": "Hard difficulty problem"},
-    "new-solution": {"color": "0000ff", "description": "First solution for this problem"},
+    "new-solution": {
+        "color": "0000ff",
+        "description": "First solution for this problem",
+    },
     "alternative-solution": {
         "color": "800080",
         "description": "Alternative solution for existing problem",
@@ -81,9 +84,13 @@ def ensure_labels_exist(vault_path: Path) -> Tuple[bool, str]:
         success, output = _run_gh_command(
             vault_path,
             [
-                "label", "create", label_name,
-                "--color", props["color"],
-                "--description", props["description"],
+                "label",
+                "create",
+                label_name,
+                "--color",
+                props["color"],
+                "--description",
+                props["description"],
                 "--force",
             ],
         )
@@ -168,10 +175,14 @@ def create_pull_request(
 
     # Build command args
     cmd_args = [
-        "pr", "create",
-        "--title", pr_title,
-        "--body", pr_body,
-        "--head", branch_name,
+        "pr",
+        "create",
+        "--title",
+        pr_title,
+        "--body",
+        pr_body,
+        "--head",
+        branch_name,
     ]
 
     # Add labels if provided

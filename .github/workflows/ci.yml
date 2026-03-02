@@ -48,6 +48,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
+      - name: Set up Kotlin
+        uses: fwilhe2/setup-kotlin@v1
+        with:
+          install-native: false
+
       - name: Run tests
         run: |
           pytest tests/ -v --tb=short

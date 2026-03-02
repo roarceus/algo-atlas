@@ -18,13 +18,42 @@ from algo_atlas.languages.base import (
 )
 
 # C keywords and type names that must not be mistaken for a function name
-_C_KEYWORDS = frozenset({
-    "if", "else", "for", "while", "do", "switch", "case", "break",
-    "continue", "return", "goto", "sizeof", "typedef", "struct", "union",
-    "enum", "const", "static", "extern", "volatile", "register",
-    "int", "long", "short", "char", "float", "double", "void", "bool",
-    "unsigned", "signed", "main",
-})
+_C_KEYWORDS = frozenset(
+    {
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "switch",
+        "case",
+        "break",
+        "continue",
+        "return",
+        "goto",
+        "sizeof",
+        "typedef",
+        "struct",
+        "union",
+        "enum",
+        "const",
+        "static",
+        "extern",
+        "volatile",
+        "register",
+        "int",
+        "long",
+        "short",
+        "char",
+        "float",
+        "double",
+        "void",
+        "bool",
+        "unsigned",
+        "signed",
+        "main",
+    }
+)
 
 # Matches a top-level C function definition (line must start with a word char,
 # not a preprocessor directive).
@@ -33,11 +62,11 @@ _C_KEYWORDS = frozenset({
 # group(1) = function name, group(2) = raw params string.
 # Requiring [^;{]*\{ at the end excludes forward declarations (which end with ;).
 _FUNC_PATTERN = re.compile(
-    r"^(?!#)"                  # line start, not a preprocessor directive
-    r"(?:[\w*][\w\s*]*?\s)"    # return type (non-greedy, ends with a space)
-    r"(\w+)\s*"                # function name
-    r"\(([^)]*)\)"             # params
-    r"[^;{]*\{",               # up to opening brace (definition, not prototype)
+    r"^(?!#)"  # line start, not a preprocessor directive
+    r"(?:[\w*][\w\s*]*?\s)"  # return type (non-greedy, ends with a space)
+    r"(\w+)\s*"  # function name
+    r"\(([^)]*)\)"  # params
+    r"[^;{]*\{",  # up to opening brace (definition, not prototype)
     re.MULTILINE,
 )
 
@@ -45,10 +74,10 @@ _FUNC_PATTERN = re.compile(
 # group(1) = return type, group(2) = function name, group(3) = params.
 _FUNC_FULL_PATTERN = re.compile(
     r"^(?!#)"
-    r"([\w*][\w\s*]*?)\s+"    # return type (captured, non-greedy)
-    r"(\w+)\s*"                # function name
-    r"\(([^)]*)\)"             # params
-    r"[^;{]*\{",               # up to opening brace
+    r"([\w*][\w\s*]*?)\s+"  # return type (captured, non-greedy)
+    r"(\w+)\s*"  # function name
+    r"\(([^)]*)\)"  # params
+    r"[^;{]*\{",  # up to opening brace
     re.MULTILINE,
 )
 
@@ -148,12 +177,12 @@ class CLanguage(LanguageSupport):
                             error_line = max(1, raw_line - preamble_lines)
                         except ValueError:
                             pass
-                        rest = parts[colon_idx + 1:].strip()
+                        rest = parts[colon_idx + 1 :].strip()
                         col_end = rest.find(":")
                         if col_end > 0:
-                            rest = rest[col_end + 1:].strip()
+                            rest = rest[col_end + 1 :].strip()
                         if rest.startswith("error:"):
-                            rest = rest[len("error:"):].strip()
+                            rest = rest[len("error:") :].strip()
                         error_msg = rest
                     break
 
@@ -335,8 +364,7 @@ class CLanguage(LanguageSupport):
 
         # Identify array params and their corresponding size params
         array_param_names = {
-            p["name"] for p in c_params
-            if p["is_ptr"] and p["name"] != "returnSize"
+            p["name"] for p in c_params if p["is_ptr"] and p["name"] != "returnSize"
         }
         # Maps "numsSize" -> "nums" for auto-size injection
         size_param_of = {
@@ -349,7 +377,8 @@ class CLanguage(LanguageSupport):
 
         # User params are those not auto-derived (not size params, not returnSize)
         user_params = [
-            p["name"] for p in c_params
+            p["name"]
+            for p in c_params
             if p["name"] != "returnSize" and p["name"] not in size_param_of
         ]
 
@@ -409,9 +438,7 @@ class CLanguage(LanguageSupport):
             )
         elif is_bool_return:
             result_decl = "bool result"
-            serialize = (
-                '    printf("{\\"result\\":%s}\\n", result ? "true" : "false");'
-            )
+            serialize = '    printf("{\\"result\\":%s}\\n", result ? "true" : "false");'
         elif is_void_return:
             result_decl = None
             serialize = '    printf("{\\"result\\":null}\\n");'

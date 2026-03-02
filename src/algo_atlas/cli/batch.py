@@ -127,9 +127,7 @@ def _parse_text_batch(content: str, base_path: Path) -> list[BatchItem]:
         parts = [p.strip() for p in line.split(",")]
 
         if len(parts) < 2:
-            raise ValueError(
-                f"Line {line_num}: Expected 'URL, solution_path' format"
-            )
+            raise ValueError(f"Line {line_num}: Expected 'URL, solution_path' format")
 
         url = parts[0]
         solution = parts[1]
@@ -215,7 +213,9 @@ def process_batch_item(
 
     # Verify solution (unless skipped)
     if not skip_verification:
-        if not verify_solution_with_progress(logger, solution_code, problem, language=language):
+        if not verify_solution_with_progress(
+            logger, solution_code, problem, language=language
+        ):
             logger.warning("Verification issues detected, continuing anyway...")
 
     # Generate documentation
@@ -230,7 +230,9 @@ def process_batch_item(
 
     # Dry run: display output and return success
     if dry_run:
-        display_dry_run_output(logger, problem, solution_code, documentation, language=language)
+        display_dry_run_output(
+            logger, problem, solution_code, documentation, language=language
+        )
         return BatchResult(
             url=item.url,
             success=True,
@@ -239,7 +241,13 @@ def process_batch_item(
 
     # Save to vault
     if save_to_vault(
-        logger, vault_path, problem, solution_code, documentation, item.url, language=language,
+        logger,
+        vault_path,
+        problem,
+        solution_code,
+        documentation,
+        item.url,
+        language=language,
     ):
         return BatchResult(
             url=item.url,
@@ -296,7 +304,10 @@ def run_batch(
     # Process each item
     results: list[BatchResult] = []
 
-    with logger.progress("Processing problems", total=len(items)) as (progress, task_id):
+    with logger.progress("Processing problems", total=len(items)) as (
+        progress,
+        task_id,
+    ):
         for i, item in enumerate(items, 1):
             try:
                 result = process_batch_item(
@@ -313,7 +324,9 @@ def run_batch(
                 progress.update(task_id, advance=1)
 
                 if not result.success and not args.continue_on_error:
-                    logger.error("Stopping batch due to error (use --continue-on-error to skip)")
+                    logger.error(
+                        "Stopping batch due to error (use --continue-on-error to skip)"
+                    )
                     break
 
             except KeyboardInterrupt:
@@ -322,11 +335,13 @@ def run_batch(
                 break
             except Exception as e:
                 logger.error(f"Unexpected error: {e}")
-                results.append(BatchResult(
-                    url=item.url,
-                    success=False,
-                    error=str(e),
-                ))
+                results.append(
+                    BatchResult(
+                        url=item.url,
+                        success=False,
+                        error=str(e),
+                    )
+                )
                 progress.update(task_id, advance=1)
                 if not args.continue_on_error:
                     break

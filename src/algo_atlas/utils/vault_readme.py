@@ -30,7 +30,8 @@ def count_vault_problems(vault_path: Path) -> dict[str, int]:
         if difficulty_path.exists():
             # Count directories that match problem pattern (number. title)
             folders = [
-                f for f in difficulty_path.iterdir()
+                f
+                for f in difficulty_path.iterdir()
                 if f.is_dir() and re.match(r"^\d+\.", f.name)
             ]
             counts[difficulty] = len(folders)
