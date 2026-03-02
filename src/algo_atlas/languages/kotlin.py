@@ -89,6 +89,17 @@ class KotlinLanguage(LanguageSupport):
             return 0
         return len(_split_kotlin_params(m.group(2)))
 
+    def run_test_case(
+        self, code: str, input_args: list, expected_output: Any
+    ) -> TestResult:
+        return TestResult(
+            passed=False,
+            input_args=input_args,
+            expected=expected_output,
+            actual=None,
+            error="Not implemented",
+        )
+
 
 def _split_kotlin_params(params_str: str) -> list[str]:
     """Split param string by comma, ignoring commas inside angle brackets."""
@@ -113,14 +124,3 @@ def _split_kotlin_params(params_str: str) -> list[str]:
     if part:
         parts.append(part)
     return parts
-
-    def run_test_case(
-        self, code: str, input_args: list, expected_output: Any
-    ) -> TestResult:
-        return TestResult(
-            passed=False,
-            input_args=input_args,
-            expected=expected_output,
-            actual=None,
-            error="Not implemented",
-        )
