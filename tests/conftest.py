@@ -393,6 +393,48 @@ class Solution {
 
 
 @pytest.fixture
+def valid_kotlin_solution():
+    """Valid Two Sum solution in Kotlin."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray {
+        val map = HashMap<Int, Int>()
+        for (i in nums.indices) {
+            val comp = target - nums[i]
+            if (map.containsKey(comp)) return intArrayOf(map[comp]!!, i)
+            map[nums[i]] = i
+        }
+        return intArrayOf()
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_kotlin_syntax():
+    """Kotlin code with syntax error."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray
+        return intArrayOf(0, 1)
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_kotlin_solution():
+    """Kotlin solution that returns wrong results."""
+    return """\
+class Solution {
+    fun twoSum(nums: IntArray, target: Int): IntArray {
+        return intArrayOf(0, 0)
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -461,6 +503,11 @@ def mock_graphql_response():
                         "lang": "C#",
                         "langSlug": "csharp",
                         "code": "public class Solution {\n    public int[] TwoSum(int[] nums, int target) {\n        \n    }\n}",
+                    },
+                    {
+                        "lang": "Kotlin",
+                        "langSlug": "kotlin",
+                        "code": "class Solution {\n    fun twoSum(nums: IntArray, target: Int): IntArray {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [
