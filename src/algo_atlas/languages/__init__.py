@@ -102,6 +102,7 @@ def _ensure_registered() -> None:
     from algo_atlas.languages.rust import RustLanguage
     from algo_atlas.languages.csharp import CSharpLanguage
     from algo_atlas.languages.kotlin import KotlinLanguage
+    from algo_atlas.languages.swift import SwiftLanguage
 
     register(PythonLanguage())
     register(JavaScriptLanguage())
@@ -113,6 +114,7 @@ def _ensure_registered() -> None:
     register(RustLanguage())
     register(CSharpLanguage())
     register(KotlinLanguage())
+    register(SwiftLanguage())
 
 
 __all__ = [
