@@ -7,7 +7,6 @@ from typing import Tuple
 
 from algo_atlas.utils.vault_files import extract_topics_from_readme
 
-
 STATS_START_MARKER = "<!-- STATS:START -->"
 STATS_END_MARKER = "<!-- STATS:END -->"
 TOPICS_START_MARKER = "<!-- TOPICS:START -->"

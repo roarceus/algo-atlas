@@ -156,12 +156,12 @@ class PythonLanguage(LanguageSupport):
     @staticmethod
     def _build_exec_namespace() -> dict:
         """Build namespace with common LeetCode imports for exec()."""
-        import collections
         import bisect
-        import heapq
-        import math
-        import itertools
+        import collections
         import functools
+        import heapq
+        import itertools
+        import math
         from typing import Dict, List, Optional, Set, Tuple
 
         return {

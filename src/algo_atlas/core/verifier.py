@@ -14,10 +14,13 @@ from algo_atlas.core.test_parser import (
     _parse_test_input,
 )
 from algo_atlas.languages import default_language, get_language
-from algo_atlas.languages.base import LanguageSupport
 
 # Re-export from languages.base so existing imports keep working
-from algo_atlas.languages.base import SyntaxResult, TestResult  # noqa: F401
+from algo_atlas.languages.base import (  # noqa: F401
+    LanguageSupport,
+    SyntaxResult,
+    TestResult,
+)
 
 
 @dataclass

@@ -3,13 +3,13 @@
 import pytest
 
 from algo_atlas.utils.logger import (
+    _ARROW,
+    _BULLET,
+    _CHECK,
+    _CROSS,
     Logger,
     get_logger,
     reset_logger,
-    _CHECK,
-    _CROSS,
-    _BULLET,
-    _ARROW,
 )
 
 

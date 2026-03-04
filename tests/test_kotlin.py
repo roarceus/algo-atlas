@@ -100,7 +100,7 @@ class TestKotlinExtractMethodName:
         lang = KotlinLanguage()
         code = (
             "class Solution {\n"
-            "    override fun toString(): String { return \"\" }\n"
+            '    override fun toString(): String { return "" }\n'
             "    fun solve(n: Int): Int { return n }\n"
             "}"
         )

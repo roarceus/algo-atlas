@@ -193,9 +193,7 @@ class KotlinLanguage(LanguageSupport):
             if compile_proc.returncode != 0:
                 errors = [
                     line
-                    for line in (
-                        compile_proc.stdout + compile_proc.stderr
-                    ).splitlines()
+                    for line in (compile_proc.stdout + compile_proc.stderr).splitlines()
                     if ": error:" in line
                 ]
                 msg = (
