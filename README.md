@@ -52,6 +52,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 | Rust | ✅ | ✅ | [rustc](https://www.rust-lang.org/tools/install) |
 | C# | ✅ | ✅ | [.NET SDK 8+](https://dotnet.microsoft.com/) |
 | Kotlin | ✅ | ✅ | [kotlinc](https://kotlinlang.org/) + JDK |
+| Swift | ✅ | ✅ | [Swift](https://www.swift.org/install/) |
 
 > Syntax checking and test execution require the respective runtime to be installed. AlgoAtlas degrades gracefully — if a runtime is not found, it reports a clear error instead of crashing.
 
@@ -73,7 +74,7 @@ This separation keeps the tool code separate from your solutions, making the vau
 | Rich Progress Bars | Spinners and progress bars for long operations | Done |
 | GitHub Actions for Vault | Auto-generate stats, TOC on push to vault repo | Done |
 | Release Automation | Auto-version, changelog, and GitHub Release via semantic-release | Done |
-| Multi-language Support | Python, JavaScript, TypeScript, Java, C++, C, Go, Rust, C#, Kotlin | Done |
+| Multi-language Support | Python, JavaScript, TypeScript, Java, C++, C, Go, Rust, C#, Kotlin, Swift | Done |
 | Interactive Search | Arrow-key navigation for search results | Todo |
 | Solution Comparison | Side-by-side comparison of alternative solutions | Todo |
 | Vault Analytics | Charts and stats dashboard for solved problems | Todo |
