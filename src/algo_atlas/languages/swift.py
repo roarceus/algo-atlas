@@ -76,10 +76,17 @@ class SwiftLanguage(LanguageSupport):
             return SyntaxResult(valid=False, error_message=msg)
 
     def extract_method_name(self, code: str) -> Optional[str]:
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _SWIFT_KEYWORDS:
+                return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        return 0
+        m = _METHOD_PATTERN.search(code)
+        if not m:
+            return 0
+        return len(_split_swift_params(m.group(2)))
 
     def run_test_case(
         self, code: str, input_args: list, expected_output: Any
@@ -91,3 +98,28 @@ class SwiftLanguage(LanguageSupport):
             actual=None,
             error="Not implemented",
         )
+
+
+def _split_swift_params(params_str: str) -> list[str]:
+    """Split param string by comma, ignoring commas inside brackets or angle brackets."""
+    parts: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in params_str:
+        if ch in ("[", "<"):
+            depth += 1
+            current.append(ch)
+        elif ch in ("]", ">"):
+            depth -= 1
+            current.append(ch)
+        elif ch == "," and depth == 0:
+            part = "".join(current).strip()
+            if part:
+                parts.append(part)
+            current = []
+        else:
+            current.append(ch)
+    part = "".join(current).strip()
+    if part:
+        parts.append(part)
+    return parts
