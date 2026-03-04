@@ -188,9 +188,7 @@ class SwiftLanguage(LanguageSupport):
             if compile_proc.returncode != 0:
                 errors = [
                     line
-                    for line in (
-                        compile_proc.stdout + compile_proc.stderr
-                    ).splitlines()
+                    for line in (compile_proc.stdout + compile_proc.stderr).splitlines()
                     if ": error:" in line
                 ]
                 msg = (
@@ -278,7 +276,7 @@ class SwiftLanguage(LanguageSupport):
                 call_args.append(f"{external}: {name}")
 
         args_str = ", ".join(call_args)
-        lines.append(f"let sol = Solution()")
+        lines.append("let sol = Solution()")
         lines.append(f"let result = sol.{method_name}({args_str})")
         lines.append("let q = String(Character(UnicodeScalar(34)!))")
         lines.append('print("{\\(q)result\\(q):\\(toJson(result))}")')
