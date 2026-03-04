@@ -2,6 +2,38 @@
 
 <!-- version list -->
 
+## v1.11.0 (2026-03-04)
+
+### Bug Fixes
+
+- **swift**: Remove bare f-string and apply black formatting
+  ([`2dc059f`](https://github.com/roarceus/algo-atlas/commit/2dc059fe4ef3d3bafbac9c8ea65a774d730bad01))
+
+- **swift**: Rename Main.swift to main.swift for top-level entry point
+  ([`e30fcf5`](https://github.com/roarceus/algo-atlas/commit/e30fcf54b97b433c0838b5b0f6e63969163bd901))
+
+### Code Style
+
+- Apply black and isort formatting
+  ([`57a589e`](https://github.com/roarceus/algo-atlas/commit/57a589eb81ff2411a083a1d7065c00f6910b9f05))
+
+### Features
+
+- **swift**: Add SwiftLanguage skeleton with swiftc syntax checker
+  ([`75f8f37`](https://github.com/roarceus/algo-atlas/commit/75f8f37c640a72b9224b7a264e3a299c08b05ac5))
+
+- **swift**: Implement extract_method_name and count_method_params
+  ([`626c6c5`](https://github.com/roarceus/algo-atlas/commit/626c6c5ad2a82f89547d0b10c1d6feb853bdf12c))
+
+- **swift**: Implement run_test_case with swiftc compile-and-run harness
+  ([`1702b85`](https://github.com/roarceus/algo-atlas/commit/1702b857007736138e02c97c6ec26245dd894702))
+
+### Testing
+
+- **swift**: Add test suite, fixtures, registry/scraper coverage, and README update
+  ([`3874a2c`](https://github.com/roarceus/algo-atlas/commit/3874a2c08fc92bdcc7c4cb0670a414c81b9c95c0))
+
+
 ## v1.10.0 (2026-03-02)
 
 ### Bug Fixes
