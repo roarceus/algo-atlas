@@ -10,10 +10,10 @@ import pytest
 from algo_atlas.cli import (
     BatchItem,
     BatchResult,
-    parse_args,
-    parse_batch_file,
     _parse_json_batch,
     _parse_text_batch,
+    parse_args,
+    parse_batch_file,
 )
 
 

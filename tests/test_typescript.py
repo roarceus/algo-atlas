@@ -7,7 +7,6 @@ from algo_atlas.languages import get_language, get_language_by_extension, list_l
 from algo_atlas.languages.base import LanguageSupport
 from algo_atlas.languages.typescript import TypeScriptLanguage
 
-
 # ---------------------------------------------------------------------------
 # Registry integration
 # ---------------------------------------------------------------------------

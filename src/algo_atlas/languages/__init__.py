@@ -92,16 +92,17 @@ def _ensure_registered() -> None:
     if _registry:
         return
     # Import here to avoid circular imports
-    from algo_atlas.languages.python import PythonLanguage
-    from algo_atlas.languages.javascript import JavaScriptLanguage
-    from algo_atlas.languages.typescript import TypeScriptLanguage
-    from algo_atlas.languages.java import JavaLanguage
-    from algo_atlas.languages.cpp import CppLanguage
     from algo_atlas.languages.c import CLanguage
-    from algo_atlas.languages.go import GoLanguage
-    from algo_atlas.languages.rust import RustLanguage
+    from algo_atlas.languages.cpp import CppLanguage
     from algo_atlas.languages.csharp import CSharpLanguage
+    from algo_atlas.languages.go import GoLanguage
+    from algo_atlas.languages.java import JavaLanguage
+    from algo_atlas.languages.javascript import JavaScriptLanguage
     from algo_atlas.languages.kotlin import KotlinLanguage
+    from algo_atlas.languages.python import PythonLanguage
+    from algo_atlas.languages.rust import RustLanguage
+    from algo_atlas.languages.swift import SwiftLanguage
+    from algo_atlas.languages.typescript import TypeScriptLanguage
 
     register(PythonLanguage())
     register(JavaScriptLanguage())
@@ -113,6 +114,7 @@ def _ensure_registered() -> None:
     register(RustLanguage())
     register(CSharpLanguage())
     register(KotlinLanguage())
+    register(SwiftLanguage())
 
 
 __all__ = [

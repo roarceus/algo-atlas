@@ -4,8 +4,8 @@ import random
 import re
 import time
 from dataclasses import dataclass
-from typing import Optional
 from html import unescape
+from typing import Optional
 
 import requests
 

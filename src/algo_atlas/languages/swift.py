@@ -1,4 +1,4 @@
-"""Kotlin language support for AlgoAtlas."""
+"""Swift language support for AlgoAtlas."""
 
 import json
 import re
@@ -16,10 +16,10 @@ from algo_atlas.languages.base import (
     TestResult,
 )
 
-# Matches a `fun` inside class Solution.
+# Matches a `func` inside class Solution.
 # group(1) = method name, group(2) = raw params string.
 _METHOD_PATTERN = re.compile(
-    r"\bfun\s+"
+    r"\bfunc\s+"
     r"(\w+)\s*"  # group(1) = method name
     r"\(([^)]*)\)",  # group(2) = raw params string
     re.MULTILINE,
@@ -27,71 +27,67 @@ _METHOD_PATTERN = re.compile(
 
 # Same but also captures return type as group(3).
 _METHOD_FULL_PATTERN = re.compile(
-    r"\bfun\s+"
+    r"\bfunc\s+"
     r"(\w+)\s*"  # group(1) = method name
     r"\(([^)]*)\)"  # group(2) = params
-    r"(?:\s*:\s*([^\n{]+?))?(?:\s*\{)",  # group(3) = return type (optional)
+    r"(?:\s*->\s*([^\n{]+?))?(?:\s*\{)",  # group(3) = return type (optional)
     re.MULTILINE,
 )
 
 # Method names that are not LeetCode solution methods.
-_KOTLIN_KEYWORDS = frozenset({"toString", "hashCode", "equals", "compareTo"})
+_SWIFT_KEYWORDS = frozenset({"init", "deinit", "subscript"})
 
 # JSON serialiser injected into the test harness.
-# Uses ASCII codes 34 (") and 92 (\) to avoid escape sequences in this string.
-_KOTLIN_TO_JSON = """\
-fun toJson(value: Any?): String {
-    if (value == null) return "null"
-    if (value is Boolean || value is Int || value is Long || value is Double) return value.toString()
-    if (value is String) {
-        val sb = StringBuilder()
-        sb.append(34.toChar())
-        for (c in value) {
-            when (c.code) {
-                34 -> { sb.append(92.toChar()); sb.append(34.toChar()) }
-                92 -> { sb.append(92.toChar()); sb.append(92.toChar()) }
-                else -> sb.append(c)
-            }
+# Uses UnicodeScalar codes 34 (") and 92 (\) to avoid escape sequences here.
+_SWIFT_JSON_HELPER = """\
+func toJson(_ value: Any?) -> String {
+    if value == nil { return "null" }
+    if let b = value as? Bool { return b ? "true" : "false" }
+    if let i = value as? Int { return "\\(i)" }
+    if let d = value as? Double { return "\\(d)" }
+    if let arr = value as? [Int] { return "[" + arr.map { "\\($0)" }.joined(separator: ",") + "]" }
+    if let arr = value as? [[Int]] { return "[" + arr.map { toJson($0) }.joined(separator: ",") + "]" }
+    if let arr = value as? [String] { return "[" + arr.map { toJson($0) }.joined(separator: ",") + "]" }
+    if let s = value as? String {
+        var r = String(Character(UnicodeScalar(34)!))
+        for c in s {
+            if c == Character(UnicodeScalar(34)!) { r += String(Character(UnicodeScalar(92)!)) + String(Character(UnicodeScalar(34)!)) }
+            else if c == Character(UnicodeScalar(92)!) { r += String(Character(UnicodeScalar(92)!)) + String(Character(UnicodeScalar(92)!)) }
+            else { r.append(c) }
         }
-        sb.append(34.toChar())
-        return sb.toString()
+        return r + String(Character(UnicodeScalar(34)!))
     }
-    if (value is IntArray) return value.joinToString(",", "[", "]") { toJson(it) }
-    if (value is LongArray) return value.joinToString(",", "[", "]") { toJson(it) }
-    if (value is Array<*>) return value.joinToString(",", "[", "]") { toJson(it) }
-    if (value is List<*>) return value.joinToString(",", "[", "]") { toJson(it) }
-    return value.toString()
+    return "\\(value!)"
 }
 """
 
 
-class KotlinLanguage(LanguageSupport):
-    """Kotlin language support using kotlinc."""
+class SwiftLanguage(LanguageSupport):
+    """Swift language support using swiftc."""
 
     def info(self) -> LanguageInfo:
         return LanguageInfo(
-            name="Kotlin",
-            slug="kotlin",
-            file_extension=".kt",
-            solution_filename="solution.kt",
-            code_fence="kotlin",
-            leetcode_slugs=["kotlin"],
+            name="Swift",
+            slug="swift",
+            file_extension=".swift",
+            solution_filename="solution.swift",
+            code_fence="swift",
+            leetcode_slugs=["swift"],
         )
 
     def can_run_tests(self) -> bool:
-        return shutil.which("kotlinc") is not None
+        return shutil.which("swiftc") is not None
 
     def check_syntax(self, code: str) -> SyntaxResult:
-        if not shutil.which("kotlinc"):
-            return SyntaxResult(valid=False, error_message="kotlinc not found")
+        if not shutil.which("swiftc"):
+            return SyntaxResult(valid=False, error_message="swiftc not found")
         if not code.strip():
             return SyntaxResult(valid=True)
         with tempfile.TemporaryDirectory() as tmp:
-            src = Path(tmp) / "solution.kt"
-            out = Path(tmp) / "solution.jar"
+            src = Path(tmp) / "solution.swift"
             src.write_text(code, encoding="utf-8")
             proc = subprocess.run(
-                ["kotlinc", str(src), "-d", str(out)],
+                ["swiftc", "-typecheck", str(src)],
                 capture_output=True,
                 text=True,
             )
@@ -108,7 +104,7 @@ class KotlinLanguage(LanguageSupport):
     def extract_method_name(self, code: str) -> Optional[str]:
         for m in _METHOD_PATTERN.finditer(code):
             name = m.group(1)
-            if name not in _KOTLIN_KEYWORDS:
+            if name not in _SWIFT_KEYWORDS:
                 return name
         return None
 
@@ -116,18 +112,18 @@ class KotlinLanguage(LanguageSupport):
         m = _METHOD_PATTERN.search(code)
         if not m:
             return 0
-        return len(_split_kotlin_params(m.group(2)))
+        return len(_split_swift_params(m.group(2)))
 
     def run_test_case(
         self, code: str, input_args: list, expected_output: Any
     ) -> TestResult:
-        if not shutil.which("kotlinc"):
+        if not shutil.which("swiftc"):
             return TestResult(
                 passed=False,
                 input_args=input_args,
                 expected=expected_output,
                 actual=None,
-                error="kotlinc not found",
+                error="swiftc not found",
             )
 
         method_name = self.extract_method_name(code)
@@ -143,15 +139,15 @@ class KotlinLanguage(LanguageSupport):
         m = _METHOD_FULL_PATTERN.search(code)
         params_str = m.group(2) if m else ""
         return_type = (m.group(3) or "Any").strip() if m else "Any"
-        params = _parse_kotlin_params(params_str)
+        params = _parse_swift_params(params_str)
 
         settings = get_settings()
         execution_timeout = settings.verifier.execution_timeout
 
         with tempfile.TemporaryDirectory() as tmp:
-            sol_path = Path(tmp) / "Solution.kt"
-            main_path = Path(tmp) / "Main.kt"
-            jar_path = Path(tmp) / "solution.jar"
+            sol_path = Path(tmp) / "Solution.swift"
+            main_path = Path(tmp) / "main.swift"
+            binary_path = Path(tmp) / "solution"
 
             sol_path.write_text(code, encoding="utf-8")
             main_path.write_text(
@@ -162,12 +158,11 @@ class KotlinLanguage(LanguageSupport):
             try:
                 compile_proc = subprocess.run(
                     [
-                        "kotlinc",
+                        "swiftc",
                         str(sol_path),
                         str(main_path),
-                        "-include-runtime",
-                        "-d",
-                        str(jar_path),
+                        "-o",
+                        str(binary_path),
                     ],
                     capture_output=True,
                     text=True,
@@ -187,7 +182,7 @@ class KotlinLanguage(LanguageSupport):
                     input_args=input_args,
                     expected=expected_output,
                     actual=None,
-                    error="kotlinc not found",
+                    error="swiftc not found",
                 )
 
             if compile_proc.returncode != 0:
@@ -211,7 +206,7 @@ class KotlinLanguage(LanguageSupport):
 
             try:
                 run_proc = subprocess.run(
-                    ["java", "-jar", str(jar_path)],
+                    [str(binary_path)],
                     capture_output=True,
                     text=True,
                     timeout=execution_timeout,
@@ -223,14 +218,6 @@ class KotlinLanguage(LanguageSupport):
                     expected=expected_output,
                     actual=None,
                     error="Execution timed out",
-                )
-            except FileNotFoundError:
-                return TestResult(
-                    passed=False,
-                    input_args=input_args,
-                    expected=expected_output,
-                    actual=None,
-                    error="java not found",
                 )
 
             if run_proc.returncode != 0:
@@ -270,30 +257,36 @@ class KotlinLanguage(LanguageSupport):
         input_args: list,
         return_type: str,
     ) -> str:
-        """Generate Main.kt content for running a single test case."""
-        lines = ["fun main() {", "    val sol = Solution()"]
+        """Generate Main.swift content for running a single test case."""
+        lines = []
 
         param_names = []
         for i, (param, value) in enumerate(zip(params, input_args)):
-            kt_type = param["type"]
+            swift_type = param["type"]
             name = f"p{i}"
-            literal = self._python_to_kotlin_literal(value, kt_type)
-            lines.append(f"    val {name}: {kt_type} = {literal}")
-            param_names.append(name)
+            literal = self._python_to_swift_literal(value, swift_type)
+            lines.append(f"let {name}: {swift_type} = {literal}")
+            param_names.append((param["external"], name))
 
-        args_str = ", ".join(param_names)
-        lines.append(f"    val result = sol.{method_name}({args_str})")
-        lines.append("    val q = 34.toChar()")
-        lines.append('    println("{${q}result${q}:" + toJson(result) + "}")')
-        lines.append("}")
+        call_args = []
+        for external, name in param_names:
+            if external == "_":
+                call_args.append(name)
+            else:
+                call_args.append(f"{external}: {name}")
+
+        args_str = ", ".join(call_args)
+        lines.append("let sol = Solution()")
+        lines.append(f"let result = sol.{method_name}({args_str})")
+        lines.append("let q = String(Character(UnicodeScalar(34)!))")
+        lines.append('print("{\\(q)result\\(q):\\(toJson(result))}")')
         lines.append("")
-        lines.append(_KOTLIN_TO_JSON)
+        lines.append(_SWIFT_JSON_HELPER)
         return "\n".join(lines)
 
     @staticmethod
-    def _python_to_kotlin_literal(value: Any, kt_type: str) -> str:
-        """Convert a Python value to a Kotlin literal matching kt_type."""
-        kt_type = kt_type.strip()
+    def _python_to_swift_literal(value: Any, swift_type: str) -> str:
+        """Convert a Python value to a Swift literal matching swift_type."""
         if isinstance(value, bool):
             return "true" if value else "false"
         if isinstance(value, int):
@@ -305,54 +298,30 @@ class KotlinLanguage(LanguageSupport):
             return f'"{escaped}"'
         if isinstance(value, list):
             if not value:
-                if "List" in kt_type:
-                    return "listOf()"
-                if kt_type == "IntArray":
-                    return "intArrayOf()"
-                return "arrayOf()"
-            if kt_type == "IntArray":
-                items = ", ".join(str(v) for v in value)
-                return f"intArrayOf({items})"
-            if kt_type == "LongArray":
-                items = ", ".join(str(v) for v in value)
-                return f"longArrayOf({items})"
-            if kt_type.startswith("List<"):
-                inner = kt_type[5:-1]
+                return "[]"
+            if isinstance(value[0], list):
                 items = ", ".join(
-                    KotlinLanguage._python_to_kotlin_literal(v, inner) for v in value
+                    "[" + ", ".join(str(v) for v in row) + "]" for row in value
                 )
-                return f"listOf({items})"
-            if kt_type.startswith("Array<"):
-                inner = kt_type[6:-1]
-                items = ", ".join(
-                    KotlinLanguage._python_to_kotlin_literal(v, inner) for v in value
-                )
-                return f"arrayOf({items})"
-            # Fallback by Python value type
-            if value and isinstance(value[0], list):
-                inner_items = [
-                    "intArrayOf(" + ", ".join(str(v) for v in row) + ")"
-                    for row in value
-                ]
-                return "arrayOf(" + ", ".join(inner_items) + ")"
-            if value and isinstance(value[0], str):
+                return f"[{items}]"
+            if isinstance(value[0], str):
                 items = ", ".join(f'"{v}"' for v in value)
-                return f"arrayOf({items})"
+                return f"[{items}]"
             items = ", ".join(str(v) for v in value)
-            return f"intArrayOf({items})"
+            return f"[{items}]"
         return str(value)
 
 
-def _split_kotlin_params(params_str: str) -> list[str]:
-    """Split param string by comma, ignoring commas inside angle brackets."""
+def _split_swift_params(params_str: str) -> list[str]:
+    """Split param string by comma, ignoring commas inside brackets or angle brackets."""
     parts: list[str] = []
     depth = 0
     current: list[str] = []
     for ch in params_str:
-        if ch == "<":
+        if ch in ("[", "<"):
             depth += 1
             current.append(ch)
-        elif ch == ">":
+        elif ch in ("]", ">"):
             depth -= 1
             current.append(ch)
         elif ch == "," and depth == 0:
@@ -368,15 +337,23 @@ def _split_kotlin_params(params_str: str) -> list[str]:
     return parts
 
 
-def _parse_kotlin_params(params_str: str) -> list[dict]:
-    """Parse Kotlin param string into list of {name, type} dicts.
+def _parse_swift_params(params_str: str) -> list[dict]:
+    """Parse Swift param string into list of {external, internal, type} dicts.
 
-    Kotlin params are formatted as `name: Type`, e.g. `nums: IntArray`.
+    Swift params: `_ nums: [Int]`, `target: Int`, `_ matrix: [[Int]]`.
     """
     result = []
-    for param in _split_kotlin_params(params_str):
+    for param in _split_swift_params(params_str):
         param = param.strip()
-        if ": " in param:
-            name, type_ = param.split(": ", 1)
-            result.append({"name": name.strip(), "type": type_.strip()})
+        if ": " not in param:
+            continue
+        left, type_ = param.split(": ", 1)
+        parts = left.strip().split()
+        if len(parts) == 2:
+            external, internal = parts
+        else:
+            external = internal = parts[0]
+        result.append(
+            {"external": external, "internal": internal, "type": type_.strip()}
+        )
     return result

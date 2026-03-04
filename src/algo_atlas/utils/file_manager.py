@@ -9,20 +9,6 @@ compatibility. New code should import directly from the specific modules:
 - vault_search: Search functionality
 """
 
-# Vault file operations
-from algo_atlas.utils.vault_files import (  # noqa: F401
-    check_problem_exists,
-    create_difficulty_folders,
-    create_problem_folder,
-    extract_topics_from_readme,
-    get_problem_info_from_path,
-    get_vault_path,
-    sanitize_title,
-    save_markdown,
-    save_solution_file,
-    validate_vault_repo,
-)
-
 # Git operations
 from algo_atlas.utils.git_ops import (  # noqa: F401
     checkout_main,
@@ -41,6 +27,20 @@ from algo_atlas.utils.github_ops import (  # noqa: F401
     create_pull_request,
     ensure_labels_exist,
     get_pr_labels,
+)
+
+# Vault file operations
+from algo_atlas.utils.vault_files import (  # noqa: F401
+    check_problem_exists,
+    create_difficulty_folders,
+    create_problem_folder,
+    extract_topics_from_readme,
+    get_problem_info_from_path,
+    get_vault_path,
+    sanitize_title,
+    save_markdown,
+    save_solution_file,
+    validate_vault_repo,
 )
 
 # Vault README operations

@@ -7,8 +7,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from algo_atlas.core.scraper import validate_leetcode_url
-
 from algo_atlas.cli.workflows import (
     display_dry_run_output,
     generate_docs_with_progress,
@@ -16,6 +14,7 @@ from algo_atlas.cli.workflows import (
     scrape_problem_with_progress,
     verify_solution_with_progress,
 )
+from algo_atlas.core.scraper import validate_leetcode_url
 
 
 @dataclass

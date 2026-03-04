@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Tuple
 
-
 # Label definitions for PRs
 LABEL_DEFINITIONS = {
     "easy": {"color": "00ff00", "description": "Easy difficulty problem"},

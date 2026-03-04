@@ -435,6 +435,47 @@ class Solution {
 
 
 @pytest.fixture
+def valid_swift_solution():
+    """Valid Two Sum solution in Swift."""
+    return """\
+class Solution {
+    func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
+        var map = [Int: Int]()
+        for (i, num) in nums.enumerated() {
+            if let j = map[target - num] { return [j, i] }
+            map[num] = i
+        }
+        return []
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_swift_syntax():
+    """Swift code with syntax error."""
+    return """\
+class Solution {
+    func twoSum(_ nums: [Int], _ target: Int) -> [Int]
+        return [0, 1]
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_swift_solution():
+    """Swift solution that returns wrong results."""
+    return """\
+class Solution {
+    func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
+        return [0, 0]
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -508,6 +549,11 @@ def mock_graphql_response():
                         "lang": "Kotlin",
                         "langSlug": "kotlin",
                         "code": "class Solution {\n    fun twoSum(nums: IntArray, target: Int): IntArray {\n        \n    }\n}",
+                    },
+                    {
+                        "lang": "Swift",
+                        "langSlug": "swift",
+                        "code": "class Solution {\n    func twoSum(_ nums: [Int], _ target: Int) -> [Int] {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [

@@ -31,8 +31,8 @@ def _run_with_timeout_windows(func: Callable, args: list, timeout: int) -> Any:
         TimeoutError: If execution exceeds timeout.
         Exception: If function raises an exception.
     """
-    import threading
     import queue
+    import threading
 
     result_queue = queue.Queue()
     exception_queue = queue.Queue()

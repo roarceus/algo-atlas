@@ -13,7 +13,6 @@ from algo_atlas.core.generator import (
 )
 from algo_atlas.core.scraper import ProblemData, scrape_problem
 from algo_atlas.core.verifier import verify_solution
-from algo_atlas.utils.logger import get_logger
 from algo_atlas.utils.file_manager import (
     check_gh_installed,
     check_problem_exists,
@@ -34,6 +33,7 @@ from algo_atlas.utils.file_manager import (
     update_vault_readme,
     validate_vault_repo,
 )
+from algo_atlas.utils.logger import get_logger
 
 
 def scrape_problem_with_progress(
@@ -182,7 +182,8 @@ def save_to_vault(
     logger.step("Saving to vault...")
 
     # Resolve solution filename from language
-    from algo_atlas.languages import default_language, get_language as _get_lang
+    from algo_atlas.languages import default_language
+    from algo_atlas.languages import get_language as _get_lang
 
     lang = _get_lang(language) if language else default_language()
     solution_filename = lang.info().solution_filename
@@ -329,7 +330,8 @@ def display_dry_run_output(
         documentation: Generated documentation.
         language: Language slug. Defaults to Python when None.
     """
-    from algo_atlas.languages import default_language, get_language as _get_lang
+    from algo_atlas.languages import default_language
+    from algo_atlas.languages import get_language as _get_lang
 
     lang = _get_lang(language) if language else default_language()
     solution_filename = lang.info().solution_filename
