@@ -146,7 +146,7 @@ class SwiftLanguage(LanguageSupport):
 
         with tempfile.TemporaryDirectory() as tmp:
             sol_path = Path(tmp) / "Solution.swift"
-            main_path = Path(tmp) / "Main.swift"
+            main_path = Path(tmp) / "main.swift"
             binary_path = Path(tmp) / "solution"
 
             sol_path.write_text(code, encoding="utf-8")
