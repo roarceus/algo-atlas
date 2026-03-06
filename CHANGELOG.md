@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v1.12.0 (2026-03-06)
+
+### Code Style
+
+- Apply black and isort formatting
+  ([`c968fd6`](https://github.com/roarceus/algo-atlas/commit/c968fd6655e09a28abba5b5dad426d23acf63c1d))
+
+### Features
+
+- **ruby**: Add RubyLanguage skeleton with ruby -c syntax checker
+  ([`b943748`](https://github.com/roarceus/algo-atlas/commit/b943748bf9ad9e7237897cd227278b3af0982cf7))
+
+- **ruby**: Implement extract_method_name and count_method_params
+  ([`7acbe58`](https://github.com/roarceus/algo-atlas/commit/7acbe585a16c329d79864b9cc7c1efb542c8503b))
+
+- **ruby**: Implement run_test_case with ruby interpreter harness
+  ([`3a3f614`](https://github.com/roarceus/algo-atlas/commit/3a3f6144e9c9dfe0868f6370728f95710f95679b))
+
+### Testing
+
+- **ruby**: Add test suite, fixtures, registry/scraper coverage, and README update
+  ([`288a9f1`](https://github.com/roarceus/algo-atlas/commit/288a9f1dd415a721e230dcc16a21005fcd5478ed))
+
+
 ## v1.11.0 (2026-03-04)
 
 ### Bug Fixes
