@@ -476,6 +476,48 @@ class Solution {
 
 
 @pytest.fixture
+def valid_ruby_solution():
+    """Valid Two Sum solution in Ruby."""
+    return """\
+class Solution
+  def two_sum(nums, target)
+    map = {}
+    nums.each_with_index do |num, i|
+      comp = target - num
+      return [map[comp], i] if map.key?(comp)
+      map[num] = i
+    end
+    []
+  end
+end
+"""
+
+
+@pytest.fixture
+def invalid_ruby_syntax():
+    """Ruby code with syntax error."""
+    return """\
+class Solution
+  def two_sum(nums, target
+    []
+  end
+end
+"""
+
+
+@pytest.fixture
+def wrong_ruby_solution():
+    """Ruby solution that returns wrong results."""
+    return """\
+class Solution
+  def two_sum(nums, target)
+    [0, 0]
+  end
+end
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -554,6 +596,11 @@ def mock_graphql_response():
                         "lang": "Swift",
                         "langSlug": "swift",
                         "code": "class Solution {\n    func twoSum(_ nums: [Int], _ target: Int) -> [Int] {\n        \n    }\n}",
+                    },
+                    {
+                        "lang": "Ruby",
+                        "langSlug": "ruby",
+                        "code": "# @param {Integer[]} nums\n# @param {Integer} target\n# @return {Integer[]}\ndef two_sum(nums, target)\n\nend",
                     },
                 ],
                 "topicTags": [

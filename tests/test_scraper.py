@@ -160,7 +160,7 @@ class TestScrapeProblem:
 
         result = scrape_problem("https://leetcode.com/problems/two-sum/")
         assert result is not None
-        assert len(result.code_snippets_raw) == 11
+        assert len(result.code_snippets_raw) == 12
         slugs = [s["langSlug"] for s in result.code_snippets_raw]
         assert "python3" in slugs
         assert "javascript" in slugs
