@@ -206,9 +206,7 @@ class RubyLanguage(LanguageSupport):
         if isinstance(value, list):
             if not value:
                 return "[]"
-            items = ", ".join(
-                RubyLanguage._python_to_ruby_literal(v) for v in value
-            )
+            items = ", ".join(RubyLanguage._python_to_ruby_literal(v) for v in value)
             return f"[{items}]"
         return str(value)
 

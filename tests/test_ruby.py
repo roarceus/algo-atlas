@@ -71,7 +71,9 @@ class TestRubyCheckSyntax:
     def test_ruby_not_found(self):
         lang = RubyLanguage()
         with patch("shutil.which", return_value=None):
-            result = lang.check_syntax("class Solution\n  def solve(n)\n    n\n  end\nend")
+            result = lang.check_syntax(
+                "class Solution\n  def solve(n)\n    n\n  end\nend"
+            )
         assert result.valid is False
         assert "ruby not found" in result.error_message
 
@@ -171,11 +173,7 @@ class TestRubyRunTestCase:
     def test_runtime_error(self):
         lang = RubyLanguage()
         code = (
-            "class Solution\n"
-            "  def boom(n)\n"
-            "    raise 'kaboom'\n"
-            "  end\n"
-            "end"
+            "class Solution\n" "  def boom(n)\n" "    raise 'kaboom'\n" "  end\n" "end"
         )
         result = lang.run_test_case(code=code, input_args=[1], expected_output=0)
         assert result.passed is False
