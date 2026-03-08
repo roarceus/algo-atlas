@@ -1,5 +1,6 @@
 """PHP language support for AlgoAtlas."""
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -12,6 +13,16 @@ from algo_atlas.languages.base import (
     SyntaxResult,
     TestResult,
 )
+
+# Matches a public/protected/private function inside class Solution.
+# group(1) = method name, group(2) = raw params string.
+_METHOD_PATTERN = re.compile(
+    r"(?:public|protected|private)?\s*function\s+(\w+)\s*\(([^)]*)\)",
+    re.MULTILINE,
+)
+
+# Method names that are not LeetCode solution methods.
+_PHP_KEYWORDS = frozenset({"__construct", "__destruct", "__toString"})
 
 
 class PHPLanguage(LanguageSupport):
@@ -49,10 +60,17 @@ class PHPLanguage(LanguageSupport):
             return SyntaxResult(valid=False, error_message=msg)
 
     def extract_method_name(self, code: str) -> Optional[str]:
+        for m in _METHOD_PATTERN.finditer(code):
+            name = m.group(1)
+            if name not in _PHP_KEYWORDS:
+                return name
         return None
 
     def count_method_params(self, code: str) -> int:
-        return 0
+        m = _METHOD_PATTERN.search(code)
+        if not m:
+            return 0
+        return len(_split_php_params(m.group(2)))
 
     def run_test_case(
         self, code: str, input_args: list, expected_output: Any
@@ -64,3 +82,47 @@ class PHPLanguage(LanguageSupport):
             actual=None,
             error="not implemented",
         )
+
+
+def _split_php_params(params_str: str) -> list[str]:
+    """Split param string by comma, ignoring commas inside brackets or parens.
+
+    Strips type hints, default values, and sigils (``$``, ``&``, ``...``)
+    so only the bare parameter name is returned.
+    """
+    parts: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in params_str:
+        if ch in ("[", "(", "{"):
+            depth += 1
+            current.append(ch)
+        elif ch in ("]", ")", "}"):
+            depth -= 1
+            current.append(ch)
+        elif ch == "," and depth == 0:
+            part = "".join(current).strip()
+            name = _extract_php_param_name(part)
+            if name:
+                parts.append(name)
+            current = []
+        else:
+            current.append(ch)
+    part = "".join(current).strip()
+    name = _extract_php_param_name(part)
+    if name:
+        parts.append(name)
+    return parts
+
+
+def _extract_php_param_name(param: str) -> str:
+    """Extract bare name from a PHP param like ``array $nums``, ``int &$n = 0``."""
+    # Strip default value
+    param = param.split("=")[0].strip()
+    # The variable is the last token containing $
+    tokens = param.split()
+    for token in reversed(tokens):
+        if "$" in token:
+            # Strip leading & ... $ and return identifier
+            return re.sub(r"^[&.]*\$", "", token)
+    return ""
