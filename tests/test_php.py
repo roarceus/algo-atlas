@@ -107,7 +107,9 @@ class TestPHPExtractMethodName:
 
     def test_camel_case(self):
         lang = PHPLanguage()
-        code = "<?php\nclass Solution {\n    function maxProfit($prices) { return 0; }\n}"
+        code = (
+            "<?php\nclass Solution {\n    function maxProfit($prices) { return 0; }\n}"
+        )
         assert lang.extract_method_name(code) == "maxProfit"
 
 
