@@ -56,6 +56,7 @@ class TestRegistry:
         assert "kotlin" in slugs
         assert "swift" in slugs
         assert "ruby" in slugs
+        assert "php" in slugs
 
     def test_default_language(self):
         """Test default language is Python."""
