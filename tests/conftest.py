@@ -518,6 +518,53 @@ end
 
 
 @pytest.fixture
+def valid_php_solution():
+    """Valid Two Sum solution in PHP."""
+    return """\
+<?php
+class Solution {
+    function twoSum($nums, $target) {
+        $map = [];
+        foreach ($nums as $i => $num) {
+            $comp = $target - $num;
+            if (array_key_exists($comp, $map)) {
+                return [$map[$comp], $i];
+            }
+            $map[$num] = $i;
+        }
+        return [];
+    }
+}
+"""
+
+
+@pytest.fixture
+def invalid_php_syntax():
+    """PHP code with syntax error."""
+    return """\
+<?php
+class Solution {
+    function twoSum($nums, $target) {
+        return [
+    }
+}
+"""
+
+
+@pytest.fixture
+def wrong_php_solution():
+    """PHP solution that returns wrong results."""
+    return """\
+<?php
+class Solution {
+    function twoSum($nums, $target) {
+        return [0, 0];
+    }
+}
+"""
+
+
+@pytest.fixture
 def temp_vault(tmp_path):
     """Create a temporary vault directory structure."""
     vault = tmp_path / "test-vault"
@@ -601,6 +648,11 @@ def mock_graphql_response():
                         "lang": "Ruby",
                         "langSlug": "ruby",
                         "code": "# @param {Integer[]} nums\n# @param {Integer} target\n# @return {Integer[]}\ndef two_sum(nums, target)\n\nend",
+                    },
+                    {
+                        "lang": "PHP",
+                        "langSlug": "php",
+                        "code": "class Solution {\n    function twoSum($nums, $target) {\n        \n    }\n}",
                     },
                 ],
                 "topicTags": [
