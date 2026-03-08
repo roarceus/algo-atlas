@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v1.13.0 (2026-03-08)
+
+### Code Style
+
+- Apply black and isort formatting
+  ([`b1c55b9`](https://github.com/roarceus/algo-atlas/commit/b1c55b9c444922f24296eaa51084f26900887796))
+
+### Features
+
+- **php**: Add PHPLanguage skeleton with php -l syntax checker
+  ([`e644138`](https://github.com/roarceus/algo-atlas/commit/e644138fca5128f61e9a0976c120f8016c2bac80))
+
+- **php**: Implement extract_method_name and count_method_params
+  ([`95e5c12`](https://github.com/roarceus/algo-atlas/commit/95e5c121d3003264c244116a58c929d6e03dd676))
+
+- **php**: Implement run_test_case with php interpreter harness
+  ([`54806f1`](https://github.com/roarceus/algo-atlas/commit/54806f18ef920c6c365864253f10161fdb915ff4))
+
+### Testing
+
+- **php**: Add test suite, fixtures, registry/scraper coverage, and README update
+  ([`71beac6`](https://github.com/roarceus/algo-atlas/commit/71beac63505659261bdf1646bbe788031dc75752))
+
+
 ## v1.12.0 (2026-03-06)
 
 ### Code Style
