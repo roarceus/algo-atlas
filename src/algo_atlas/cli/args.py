@@ -24,6 +24,12 @@ def parse_args() -> argparse.Namespace:
         help="Preview generated documentation without saving to vault",
     )
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show raw Claude output, subprocess commands, and scraper responses",
+    )
+    parser.add_argument(
         "-l",
         "--language",
         default=None,
@@ -71,6 +77,12 @@ def parse_args() -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Preview generated documentation without saving to vault",
+    )
+    batch_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show raw Claude output, subprocess commands, and scraper responses",
     )
     batch_parser.add_argument(
         "--skip-verification",
