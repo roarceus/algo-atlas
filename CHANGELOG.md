@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.14.0 (2026-03-10)
+
+### Bug Fixes
+
+- **verbose**: Remove bare f-string and apply black/isort formatting
+  ([`2f39774`](https://github.com/roarceus/algo-atlas/commit/2f39774270c309787e1cce16a327c36e31fae7ba))
+
+### Features
+
+- **verbose**: Add --verbose flag to CLI and wire into logger
+  ([`ae5c91a`](https://github.com/roarceus/algo-atlas/commit/ae5c91a73acc585459a089c29a5c6e8ed7059db9))
+
+- **verbose**: Add debug logging to Claude generator and LeetCode scraper
+  ([`5f5bafb`](https://github.com/roarceus/algo-atlas/commit/5f5bafb2c8869bfe4f282977ff427c910b2046f2))
+
+
 ## v1.13.0 (2026-03-08)
 
 ### Code Style
