@@ -493,7 +493,7 @@ def main():
     from algo_atlas.cli.input_handlers import get_language_choice, startup_checks
 
     args = parse_args()
-    logger = get_logger()
+    logger = get_logger(verbose=getattr(args, "verbose", False))
 
     # Resolve language (CLI flag > config > default)
     cli_language = getattr(args, "language", None)
