@@ -56,7 +56,7 @@ def call_claude(
             error="Claude CLI not installed. Install with: npm install -g @anthropic-ai/claude-code",
         )
 
-    logger.debug(f"[Claude] Command: claude -p --output-format text")
+    logger.debug("[Claude] Command: claude -p --output-format text")
     logger.debug(f"[Claude] Prompt length: {len(prompt)} chars")
 
     try:
