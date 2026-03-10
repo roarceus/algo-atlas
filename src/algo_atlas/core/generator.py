@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from algo_atlas.core.scraper import ProblemData
+from algo_atlas.utils.logger import get_logger
 from algo_atlas.utils.prompts import (
     get_documentation_prompt,
     get_expected_outputs_prompt,
@@ -47,11 +48,16 @@ def call_claude(
     Returns:
         GenerationResult with response or error.
     """
+    logger = get_logger()
+
     if not check_claude_installed():
         return GenerationResult(
             success=False,
             error="Claude CLI not installed. Install with: npm install -g @anthropic-ai/claude-code",
         )
+
+    logger.debug(f"[Claude] Command: claude -p --output-format text")
+    logger.debug(f"[Claude] Prompt length: {len(prompt)} chars")
 
     try:
         # Pass prompt via stdin to avoid Windows command-line length/escaping issues
@@ -63,11 +69,19 @@ def call_claude(
             timeout=timeout,
         )
 
+        logger.debug(f"[Claude] Return code: {result.returncode}")
+        if result.stderr:
+            logger.debug(f"[Claude] Stderr: {result.stderr[:500]}")
+
         if result.returncode != 0:
             return GenerationResult(
                 success=False,
                 error=f"Claude CLI error: {result.stderr}",
             )
+
+        logger.debug(
+            f"[Claude] Raw output ({len(result.stdout)} chars):\n{result.stdout[:2000]}"
+        )
 
         return GenerationResult(
             success=True,
@@ -118,7 +132,10 @@ def generate_documentation(
     result = call_claude(prompt)
 
     if result.success and result.content:
+        raw = result.content
         result.content = _clean_generated_content(result.content)
+        if raw != result.content:
+            get_logger().debug("[Claude] Content cleaned (preamble/fences removed)")
 
     return result
 

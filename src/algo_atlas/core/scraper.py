@@ -10,6 +10,7 @@ from typing import Optional
 import requests
 
 from algo_atlas.config.settings import get_settings
+from algo_atlas.utils.logger import get_logger
 
 # LeetCode GraphQL endpoint
 LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql"
@@ -131,29 +132,39 @@ def _make_request(
         "variables": {"titleSlug": slug},
     }
 
+    logger = get_logger()
+    logger.debug(f"[Scraper] GET {LEETCODE_GRAPHQL_URL} (slug={slug!r})")
+
     for attempt in range(max_retries):
         try:
+            logger.debug(f"[Scraper] Attempt {attempt + 1}/{max_retries}")
             response = requests.post(
                 LEETCODE_GRAPHQL_URL,
                 json=payload,
                 headers=headers,
                 timeout=timeout,
             )
+            logger.debug(f"[Scraper] HTTP {response.status_code}")
             response.raise_for_status()
 
             data = response.json()
             if "errors" in data:
+                logger.debug(f"[Scraper] GraphQL errors: {data['errors']}")
                 return None
 
+            logger.debug("[Scraper] Response OK")
             return data.get("data", {}).get("question")
 
-        except requests.RequestException:
+        except requests.RequestException as e:
+            logger.debug(f"[Scraper] Request failed: {e}")
             if attempt < max_retries - 1:
                 # Exponential backoff
                 wait_time = retry_delay * (2**attempt)
+                logger.debug(f"[Scraper] Retrying in {wait_time}s...")
                 time.sleep(wait_time)
             continue
 
+    logger.debug("[Scraper] All attempts exhausted")
     return None
 
 
