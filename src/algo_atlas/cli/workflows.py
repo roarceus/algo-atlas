@@ -430,6 +430,83 @@ def run_workflow(
     return True
 
 
+def run_status(logger) -> None:
+    """Display current configuration and runtime status.
+
+    Args:
+        logger: Logger instance.
+    """
+    import shutil
+
+    from algo_atlas.config.settings import Settings
+    from algo_atlas.core.generator import check_claude_installed
+    from algo_atlas.languages import list_languages
+    from algo_atlas.utils.vault_files import validate_vault_repo
+
+    logger.header("AlgoAtlas Status")
+
+    # Config file
+    logger.blank()
+    logger.step("Configuration")
+    config_path = Settings._find_config_file()
+    if config_path:
+        logger.success(f"Config file: {config_path}")
+    else:
+        logger.warning("No config file found (using defaults)")
+        logger.info(
+            "Create one at: ~/.config/algo-atlas/config.yaml"
+            " or ./config/config.yaml"
+        )
+
+    settings = get_settings()
+
+    # Vault
+    logger.blank()
+    logger.step("Vault")
+    if settings.vault_path:
+        vault_path = Path(settings.vault_path)
+        if validate_vault_repo(vault_path):
+            logger.success(f"Path: {vault_path}")
+        else:
+            logger.error(f"Path invalid or missing subdirs: {vault_path}")
+    else:
+        logger.error("Vault path not configured")
+        logger.info("Set vault_path in config.yaml")
+
+    # Settings
+    logger.blank()
+    logger.step("Settings")
+    logger.info(f"Default language:    {settings.language.default}")
+    logger.info(f"Execution timeout:   {settings.verifier.execution_timeout}s")
+    logger.info(f"LeetCode timeout:    {settings.leetcode.timeout}s")
+    if settings.claude.model:
+        logger.info(f"Claude model:        {settings.claude.model}")
+
+    # Claude CLI
+    logger.blank()
+    logger.step("Claude CLI")
+    if check_claude_installed():
+        claude_path = shutil.which("claude")
+        logger.success(f"Installed: {claude_path}")
+    else:
+        logger.error("Not found")
+        logger.info("Install with: npm install -g @anthropic-ai/claude-code")
+
+    # Language runtimes
+    logger.blank()
+    logger.step("Language Runtimes")
+    for info in sorted(list_languages(), key=lambda i: i.name):
+        from algo_atlas.languages import get_language
+
+        lang = get_language(info.slug)
+        if lang and lang.can_run_tests():
+            logger.success(info.name)
+        else:
+            logger.warning(f"{info.name} (runtime not found)")
+
+    logger.blank()
+
+
 def run_search(logger, vault_path: Path, args: argparse.Namespace) -> None:
     """Run search command and display results.
 
@@ -498,6 +575,11 @@ def main():
     # Resolve language (CLI flag > config > default)
     cli_language = getattr(args, "language", None)
     language = get_language_choice(logger, cli_language)
+
+    # Handle status command
+    if args.command == "status":
+        run_status(logger)
+        return
 
     # Handle search command
     if args.command == "search":
