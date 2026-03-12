@@ -36,6 +36,12 @@ def parse_args() -> argparse.Namespace:
         help="Language slug for solution (e.g., python3, javascript). Defaults to config setting.",
     )
 
+    # Status subcommand
+    subparsers.add_parser(
+        "status",
+        help="Show current configuration and runtime status",
+    )
+
     # Search subcommand
     search_parser = subparsers.add_parser(
         "search",
