@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.15.0 (2026-03-12)
+
+### Code Style
+
+- Apply black and isort formatting
+  ([`0d20043`](https://github.com/roarceus/algo-atlas/commit/0d20043369dca2e601ed960a89fbe2fe2a728ac7))
+
+### Features
+
+- **status**: Add algo-atlas status command showing config and runtime info
+  ([`b614233`](https://github.com/roarceus/algo-atlas/commit/b6142336e1a6aca13e153920f11a92486595f876))
+
+
 ## v1.14.0 (2026-03-10)
 
 ### Bug Fixes
