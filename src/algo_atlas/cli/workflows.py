@@ -454,8 +454,7 @@ def run_status(logger) -> None:
     else:
         logger.warning("No config file found (using defaults)")
         logger.info(
-            "Create one at: ~/.config/algo-atlas/config.yaml"
-            " or ./config/config.yaml"
+            "Create one at: ~/.config/algo-atlas/config.yaml" " or ./config/config.yaml"
         )
 
     settings = get_settings()
